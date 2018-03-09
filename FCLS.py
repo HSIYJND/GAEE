@@ -2,19 +2,27 @@ import numpy as np
 from cvxopt import solvers, matrix
 
 class FCLS(object):
-
-	
-	data_loc = None
-	endmembers_loc = None
 	
 	data = None
 	endmembers = None
 
 	abundances = None
 
-	def __init__(self, data_loc, endmembers_loc):
-		self.data = m
-		self.endmembers = n
+	def __init__(self, argin):
+		if type(argin[0]) == type(''):
+			data_loc = argin[0]
+			endmembers_loc = argin[1]
+			self.load_data(data_loc,endmembers_loc)
+		else:
+			self.data = argin[0]
+			self.endmembers = argin[1]
+
+	def load_data(self,data_loc):
+		pkg_data = sio.loadmat(data_loc)
+		self.data = pkg_data['X']
+		self.nRow = self.data.shape[0]
+		self.nCol = self.data.shape[1]
+		self.nBand = self.data.shape[2]
 
 	def _numpy_None_vstack(self,A1, A2):
 		if A1 is None:
@@ -35,7 +43,7 @@ class FCLS(object):
 		else:
 			return matrix(A, A.shape, 'd')
 
-	def map_abundace(self):
+	def map_abundance(self):
 
 		M = self.convert_2D(self.data).T
 		U = self.endmembers.T
@@ -67,18 +75,3 @@ class FCLS(object):
 			print(str(N/n1) + '%')
 
 		self.abundances = X
-
-if __name__ == '__main__':
-	# data_loc = "./DATA/cuprite_data.mat"
-	# data_loc = "./DATA/cuprite_groundtruth.mat"
-	data_loc = "./TEMP/M.mat"
-	gt_loc = "./TEMP/U.mat"
-	num_endm = 20
-	algo = VCA(data_loc,num_endm)
-	algo.load_groundtruth(gt_loc)
-	algo.extract_endmember()
-	# vca.map_abundace()
-	algo.FCLS()
-	# vca.plot_abundance(1)	
-	algo.plot_groundtruth()
-	plt.show()

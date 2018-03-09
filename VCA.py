@@ -6,7 +6,6 @@ from cvxopt import solvers, matrix
 
 class VCA(object):
 
-	data_loc = None
 	p = None
 	data = None
 	nRow = None
@@ -15,27 +14,31 @@ class VCA(object):
 	nPixel = None
 
 	endmembers = None
-	abundances = None
 
-	groundtruth = None
-	y = None
-
-	def __init__(self, data_loc, p):
-		self.data_loc = data_loc
-		self.p = p
-		self.load_data()
-
-	def load_data(self):
-		pkg_data = sio.loadmat(self.data_loc)
+	def __init__(self, argin):
+		if type(argin[0]) == type(''):
+			data_loc = argin[0]
+			self.load_data(data_loc)
+		else:
+			self.data = argin[0]
+		self.p = argin[1]
+		
+	def load_data(self,data_loc):
+		pkg_data = sio.loadmat(data_loc)
 		self.data = pkg_data['X']
 		self.nRow = self.data.shape[0]
 		self.nCol = self.data.shape[1]
 		self.nBand = self.data.shape[2]
+	
+	def convert_2D(self,data):
+		self.nPixel = self.nRow*self.nCol
+		data_2D = np.asmatrix(data.reshape((self.nRow*self.nCol,self.nBand))).T
+		return data_2D
 
-	def load_groundtruth(self,gt_loc):
-		pkg_gt = sio.loadmat(gt_loc)
-		self.groundtruth = pkg_gt['Y']
-		self.num_gtendm = self.groundtruth.shape[1]
+	def convert_3D(self,data):
+		data_3D = np.asarray(data)
+		data_3D = data_3D.reshape((self.nRow,self.nCol,self.p))
+		return data_3D
 
 	def extract_endmember(self):
 		R = self.convert_2D(self.data)
@@ -92,40 +95,6 @@ class VCA(object):
 		self.y = R_p
 		self.endmembers = R_p[:,indice]
 
-	def map_abundace(self):
-		self.abundances = self.convert_3D((la.pinv(self.endmembers)*self.y).T)
-
-	def convert_2D(self,data):
-		self.nPixel = self.nRow*self.nCol
-		data_2D = np.asmatrix(data.reshape((self.nRow*self.nCol,self.nBand))).T
-		return data_2D
-
-	def convert_3D(self,data):
-		data_3D = np.asarray(data)
-		data_3D = data_3D.reshape((self.nRow,self.nCol,self.p))
-		return data_3D
-
-	def plot_abundance(self, i):
-		plt.matshow(self.abundances[:,:,i])
-
-	def plot_groundtruth(self):
-		plt.matshow(self.groundtruth[:,:])
-
-
-if __name__ == '__main__':
-	# data_loc = "./DATA/cuprite_data.mat"
-	# data_loc = "./DATA/cuprite_groundtruth.mat"
-	data_loc = "./DATA/grss2018_data.mat"
-	gt_loc = "./DATA/grss2018_groundtruth.mat"
-	num_endm = 20
-	algo = VCA(data_loc,num_endm)
-	algo.load_groundtruth(gt_loc)
-	algo.extract_endmember()
-	# vca.map_abundace()
-	algo.FCLS()
-	# vca.plot_abundance(1)	
-	algo.plot_groundtruth()
-	plt.show()
 
 
 
