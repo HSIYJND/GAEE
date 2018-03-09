@@ -21,6 +21,9 @@ class VCA(object):
 			self.load_data(data_loc)
 		else:
 			self.data = argin[0]
+			self.nRow = self.data.shape[0]
+			self.nCol = self.data.shape[1]
+			self.nBand = self.data.shape[2]
 		self.p = argin[1]
 		
 	def load_data(self,data_loc):
