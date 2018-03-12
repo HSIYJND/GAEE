@@ -1,4 +1,5 @@
 # Hyperspectral Endmember Extraction
+### Douglas Winston R. S., Gustavo T. Laureano, Celso G. Camilo Jr.
 
 ## Comparison of Vertex Componet Analysis (VCA) and Genetic Algorithm Endmember Extraction (GAEE) algorithms for Endmember Extraction
 
