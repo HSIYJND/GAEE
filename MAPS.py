@@ -1,7 +1,7 @@
 import numpy as np
 from cvxopt import solvers, matrix
 
-class FCLS(object):
+class UCLS(object):
 	
 	data = None
 	endmembers = None
@@ -9,20 +9,26 @@ class FCLS(object):
 	abundances = None
 
 	def __init__(self, argin):
-		if type(argin[0]) == type(''):
-			data_loc = argin[0]
-			endmembers_loc = argin[1]
-			self.load_data(data_loc,endmembers_loc)
-		else:
-			self.data = argin[0]
-			self.endmembers = argin[1]
+		self.data = argin[0]
+		self.endmembers = argin[1]
 
-	def load_data(self,data_loc):
-		pkg_data = sio.loadmat(data_loc)
-		self.data = pkg_data['X']
-		self.nRow = self.data.shape[0]
-		self.nCol = self.data.shape[1]
-		self.nBand = self.data.shape[2]
+	def map_abundance(self):
+
+		M = self.data.T
+		U = self.endmembers.T
+		Uinv = np.linalg.pinv(U.T)
+
+		self.abundances = np.dot(Uinv, M[0:,:].T).T
+
+class FCLS(object):
+	
+	data = None
+	endmembers = None
+	abundances = None
+
+	def __init__(self, argin):
+		self.data = argin[0]
+		self.endmembers = argin[1]
 
 	def _numpy_None_vstack(self,A1, A2):
 		if A1 is None:
@@ -45,7 +51,7 @@ class FCLS(object):
 
 	def map_abundance(self):
 
-		M = self.convert_2D(self.data).T
+		M = self.data.T
 		U = self.endmembers.T
 
 		solvers.options['show_progress'] = False

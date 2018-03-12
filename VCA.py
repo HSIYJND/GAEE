@@ -6,45 +6,25 @@ from cvxopt import solvers, matrix
 
 class VCA(object):
 
-	p = None
 	data = None
 	nRow = None
 	nCol = None
 	nBand = None
 	nPixel = None
-
+	p = None
+	
 	endmembers = None
 
 	def __init__(self, argin):
-		if type(argin[0]) == type(''):
-			data_loc = argin[0]
-			self.load_data(data_loc)
-		else:
-			self.data = argin[0]
-			self.nRow = self.data.shape[0]
-			self.nCol = self.data.shape[1]
-			self.nBand = self.data.shape[2]
-		self.p = argin[1]
-		
-	def load_data(self,data_loc):
-		pkg_data = sio.loadmat(data_loc)
-		self.data = pkg_data['X']
-		self.nRow = self.data.shape[0]
-		self.nCol = self.data.shape[1]
-		self.nBand = self.data.shape[2]
-	
-	def convert_2D(self,data):
-		self.nPixel = self.nRow*self.nCol
-		data_2D = np.asmatrix(data.reshape((self.nRow*self.nCol,self.nBand))).T
-		return data_2D
-
-	def convert_3D(self,data):
-		data_3D = np.asarray(data)
-		data_3D = data_3D.reshape((self.nRow,self.nCol,self.p))
-		return data_3D
+		self.data = argin[0]
+		self.nRow = argin[1]
+		self.nCol = argin[2]
+		self.nBand = argin[3]
+		self.nPixel = argin[4]
+		self.p = argin[5]
 
 	def extract_endmember(self):
-		R = self.convert_2D(self.data)
+		R = self.data
 		L, N = R.shape
 		SNR_th = 15 + 10*np.log10(self.p)
 		r_m = R.mean(1)  # mean
@@ -97,13 +77,3 @@ class VCA(object):
 			S[:,i] = y[:,indice[i]]
 		self.y = R_p
 		self.endmembers = R_p[:,indice]
-
-
-
-
-
-
-
-
-
-
