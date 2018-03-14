@@ -25,7 +25,7 @@ class GAEE(object):
 	endmembers = None
 
 	def __init__(self, argin):
-		print ('	Initializing GAEE algorithm ---')
+		print ('---		Initializing GAEE algorithm')
 		self.data = argin[0]
 		self.nRow = argin[1]
 		self.nCol = argin[2]
@@ -39,7 +39,7 @@ class GAEE(object):
 		self.mutpb = argin[9]
 
 	def princomp(self,A):
-		print('		Reducing data dimension (PCA) ---')
+		print('---		Reducing data dimension (PCA)')
 		M = (A-np.mean(A.T,axis=1)).T # subtract the mean (along columns)
 		[latent,coeff] = la.eig(np.cov(M)) # attention:not always sorted
 		score = np.dot(coeff.T,M) # projection of the data in the new space
@@ -64,7 +64,7 @@ class GAEE(object):
 		return individual
 
 	def extract_endmember(self):
-		print('		Starting endmembers Extracting ---')
+		print('---		Starting endmembers Extracting')
 		data = self.data
 		p = self.p
 		k = self.npop
@@ -90,17 +90,17 @@ class GAEE(object):
 		random.seed(64)
 		pop = toolbox.population(n=k)
 
-		print("		Starting of evolution ---")
+		print("---		Starting of evolution")
 		#fitnesses = list(map(toolbox.evaluate,pop))
 		fitnesses = [toolbox.evaluate(ind) for ind in pop]
 		for ind, fit in zip(pop, fitnesses):
 			ind.fitness.values = fit
-		print("				Evaluated %i individuals ooo" % len(pop))
+		print("^^^			Evaluated %i individuals" % len(pop))
 		fits = [ind.fitness.values[0] for ind in pop]
 		g = 0
 		while g < ng:
 			g = g + 1
-			print("			Generation %i ooo" % g)
+			print("^^^			Generation %i" % g)
 			offspring = toolbox.select(pop, len(pop))
 			offspring = list(map(toolbox.clone, offspring))
 			for child1, child2 in zip(offspring[::2], offspring[1::2]):
@@ -123,16 +123,16 @@ class GAEE(object):
 			mean = sum(fits) / length
 			sum2 = sum(x*x for x in fits)
 			std = abs(sum2 / length - mean**2)**0.5
-			print("			Min %s ooo" % min(fits))
-			print("			Max %s ooo" % max(fits))
-			print("			Avg %s ooo" % mean)
-			print("			Std %s ooo" % std)
-		print("		End of (successful) evolution ---")
+			print("^^^			Min %s" % min(fits))
+			print("^^^			Max %s" % max(fits))
+			print("^^^			Avg %s" % mean)
+			print("^^^			Std %s" % std)
+		print("---		End of (successful) evolution")
 		best_ind = tools.selBest(pop, 1)[0]
-		print("		Best individual is %s, %s ---" %(np.sort(best_ind) ,best_ind.fitness.values))
+		print("---		Best individual is %s, %s" %(np.sort(best_ind) ,best_ind.fitness.values))
 		S_est = data[:,best_ind]
 
 		self.endmembers = S_est
-		print('		Ending endmembers Extracting ---')
+		print('---		Ending endmembers Extracting')
 
 		return self.endmembers
