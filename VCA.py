@@ -38,8 +38,6 @@ class VCA(object):
 		P_y = (np.power(R,2)/N).sum()
 		P_x = np.asscalar((np.power(x_p,2)/N).sum() + (r_m.T*r_m))
 		SNR = np.asscalar(10*np.log10(np.abs([(P_x - self.p/L*P_y)/(P_y-P_x)])))
-		print(SNR)
-		print(SNR_th)
 		if SNR < SNR_th:
 			d = self.p-1
 			Ud = Ud[:,:d] 
@@ -77,3 +75,4 @@ class VCA(object):
 			S[:,i] = y[:,indice[i]]
 		self.y = R_p
 		self.endmembers = R_p[:,indice]
+		return self.endmembers

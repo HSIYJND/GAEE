@@ -4,13 +4,27 @@ from cvxopt import solvers, matrix
 class UCLS(object):
 	
 	data = None
-	endmembers = None
+	nRow = None
+	nCol = None
+	nBand = None
+	nPixel = None
+	p = None
 
+	endmembers = None
 	abundances = None
 
 	def __init__(self, argin):
 		self.data = argin[0]
-		self.endmembers = argin[1]
+		self.nRow = argin[1]
+		self.nCol = argin[2]
+		self.nBand = argin[3]
+		self.nPixel = argin[4]
+		self.p = argin[5]
+
+	def convert_3D(self,data):
+		data_3D = np.asarray(data)
+		data_3D = data_3D.reshape((self.nRow,self.nCol,self.p))
+		return data_3D
 
 	def map_abundance(self):
 
@@ -18,17 +32,33 @@ class UCLS(object):
 		U = self.endmembers.T
 		Uinv = np.linalg.pinv(U.T)
 
-		self.abundances = np.dot(Uinv, M[0:,:].T).T
+		self.abundances = self.convert_3D(np.dot(Uinv, M[0:,:].T).T)
+		return self.abundances
 
 class FCLS(object):
 	
 	data = None
+	nRow = None
+	nCol = None
+	nBand = None
+	nPixel = None
+	p = None
+
 	endmembers = None
 	abundances = None
 
 	def __init__(self, argin):
 		self.data = argin[0]
-		self.endmembers = argin[1]
+		self.nRow = argin[1]
+		self.nCol = argin[2]
+		self.nBand = argin[3]
+		self.nPixel = argin[4]
+		self.p = argin[5]
+
+	def convert_3D(self,data):
+		data_3D = np.asarray(data)
+		data_3D = data_3D.reshape((self.nRow,self.nCol,self.p))
+		return data_3D
 
 	def _numpy_None_vstack(self,A1, A2):
 		if A1 is None:
@@ -80,4 +110,5 @@ class FCLS(object):
 			X[n1] = np.array(sol).squeeze()
 			print(str(N/n1) + '%')
 
-		self.abundances = X
+		self.abundances = self.convert_3D(X)
+		return self.abundances
