@@ -1,5 +1,6 @@
 import numpy as np
 from cvxopt import solvers, matrix
+import scipy.optimize as opt
 
 class UCLS(object):
 	
@@ -33,6 +34,47 @@ class UCLS(object):
 		Uinv = np.linalg.pinv(U.T)
 
 		self.abundances = self.convert_3D(np.dot(Uinv, M[0:,:].T).T)
+		return self.abundances
+
+class NNLS(object):
+	
+	data = None
+	nRow = None
+	nCol = None
+	nBand = None
+	nPixel = None
+	p = None
+
+	endmembers = None
+	abundances = None
+
+	def __init__(self, argin):
+		self.data = argin[0]
+		self.nRow = argin[1]
+		self.nCol = argin[2]
+		self.nBand = argin[3]
+		self.nPixel = argin[4]
+		self.p = argin[5]
+
+	def convert_3D(self,data):
+		data_3D = np.asarray(data)
+		data_3D = data_3D.reshape((self.nRow,self.nCol,self.p))
+		return data_3D
+
+	def map_abundance(self):
+
+		M = np.asarray(self.data.T)
+		U = np.asarray(self.endmembers.T)
+
+		N, p1 = M.shape
+		q, p2 = U.shape
+
+		X = np.zeros((N, q), dtype=np.float32)
+		MtM = np.dot(U, U.T)
+		for n1 in range(N):
+			X[n1] = opt.nnls(MtM, np.dot(U, M[n1]))[0]
+
+		self.abundances = self.convert_3D(X)
 		return self.abundances
 
 class FCLS(object):

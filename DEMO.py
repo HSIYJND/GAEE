@@ -42,7 +42,7 @@ class DEMO(object):
 			self.ee = GAEE([self.data,self.nRow,self.nCol,self.nBand,self.nPixel, self.p, self.npop,
 				self.ngen,self.cxpb,self.mutpb])
 
-		print('... Selecting UCLS abundance mapper')
+		print('... Selecting NNLS abundance mapper')
 		self.am = UCLS([self.data,self.nRow,self.nCol,self.nBand,self.nPixel, self.p])
 
 	def extract_endmember(self):
@@ -102,14 +102,14 @@ if __name__ == '__main__':
 	data_loc = "./DATA/grss2018_data.mat"
 	gt_loc = "./DATA/grss2018_groundtruth.mat"
 	num_endm = 20
-	algo = 'VCA'
+	# algo = 'VCA'
 
-	vca = DEMO([data_loc,gt_loc,num_endm,algo])
-	vca.extract_endmember()
-	vca.map_abundance()
-	vca.plot_endmember(0)
-	vca.plot_abundance(0)
-	plt.show()
+	# vca = DEMO([data_loc,gt_loc,num_endm,algo])
+	# vca.extract_endmember()
+	# vca.map_abundance()
+	# vca.plot_endmember(0)
+	# vca.plot_abundance(0)
+	# plt.show()
 
 	npop = 100
 	ngen = 100
@@ -121,5 +121,10 @@ if __name__ == '__main__':
 	gaee.extract_endmember()
 	gaee.map_abundance()
 	gaee.plot_endmember(0)
-	gaee.plot_abundance(0)
+	gaee.plot_abundance(1)
+	gaee.plot_abundance(2)
+	gaee.plot_abundance(3)
+	gaee.plot_abundance(4)
+	gaee.plot_abundance(5)
+	gaee.plot_abundance(6)
 	plt.show()
