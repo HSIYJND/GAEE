@@ -1,5 +1,6 @@
 from VCA import *
 from GAEE import *
+from GAEE_IVFm import *
 from MAPS import *
 import scipy.io as sio
 import matplotlib.pyplot as plt
@@ -46,6 +47,16 @@ class DEMO(object):
 			if (verbose):
 				print('... Selecting GAEE endmember extractor')
 			self.ee = GAEE([self.data,self.nRow,self.nCol,self.nBand,self.nPixel, self.p, self.npop,
+				self.ngen,self.cxpb,self.mutpb],self.verbose)
+
+		if argin[3] == 'GAEE-IVFm':
+			self.npop = argin[4]
+			self.ngen = argin[5]
+			self.cxpb = argin[6]
+			self.mutpb = argin[7]
+			if (verbose):
+				print('... Selecting GAEE-IVFm endmember extractor')
+			self.ee = GAEEIVFm([self.data,self.nRow,self.nCol,self.nBand,self.nPixel, self.p, self.npop,
 				self.ngen,self.cxpb,self.mutpb],self.verbose)
 
 		if (verbose):
@@ -128,20 +139,28 @@ if __name__ == '__main__':
 	# vca.plot_abundance(0)
 	# plt.show()
 
+	# npop = 100
+	# ngen = 100
+	# cxpb = 0.3
+	# mutpb = 0.5
+	# algo = 'GAEE'
+	
+	# gaee = DEMO([data_loc,gt_loc,num_endm,algo,npop,ngen,cxpb,mutpb],verbose)
+	# gaee.extract_endmember()
+	# gaee.map_abundance()
+	# gaee.plot_endmember(0)
+	# gaee.plot_abundance(0)
+
 	npop = 100
 	ngen = 100
 	cxpb = 0.3
 	mutpb = 0.5
-	algo = 'GAEE'
-	
+	algo = 'GAEE-IVFm'
+
 	gaee = DEMO([data_loc,gt_loc,num_endm,algo,npop,ngen,cxpb,mutpb],verbose)
 	gaee.extract_endmember()
 	gaee.map_abundance()
 	gaee.plot_endmember(0)
-	gaee.plot_abundance(1)
-	gaee.plot_abundance(2)
-	gaee.plot_abundance(3)
-	gaee.plot_abundance(4)
-	gaee.plot_abundance(5)
-	gaee.plot_abundance(6)
+	gaee.plot_abundance(0)
+
 	plt.show()
