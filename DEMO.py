@@ -22,8 +22,12 @@ class DEMO(object):
 	endmembers = None
 	abundances = None
 
-	def __init__(self, argin):
-		print('... Initializing DEMO')
+	verbose = True
+
+	def __init__(self, argin,verbose):
+		if (verbose):
+			print('... Initializing DEMO')
+		self.verbose = verbose
 		self.load_data(argin[0])
 		self.load_groundtruth(argin[1])
 		self.data = self.convert_2D(self.data)
@@ -31,31 +35,37 @@ class DEMO(object):
 		self.p = argin[2]
 		
 		if argin[3] == 'VCA':
-			print('... Selecting VCA endmember extractor')
-			self.ee = VCA([self.data,self.nRow,self.nCol,self.nBand,self.nPixel, self.p])
+			if (verbose):
+				print('... Selecting VCA endmember extractor')
+			self.ee = VCA([self.data,self.nRow,self.nCol,self.nBand,self.nPixel, self.p],self.verbose)
 		if argin[3] == 'GAEE':
 			self.npop = argin[4]
 			self.ngen = argin[5]
 			self.cxpb = argin[6]
 			self.mutpb = argin[7]
-			print('... Selecting GAEE endmember extractor')
+			if (verbose):
+				print('... Selecting GAEE endmember extractor')
 			self.ee = GAEE([self.data,self.nRow,self.nCol,self.nBand,self.nPixel, self.p, self.npop,
-				self.ngen,self.cxpb,self.mutpb])
+				self.ngen,self.cxpb,self.mutpb],self.verbose)
 
-		print('... Selecting NNLS abundance mapper')
-		self.am = UCLS([self.data,self.nRow,self.nCol,self.nBand,self.nPixel, self.p])
+		if (verbose):
+			print('... Selecting NNLS abundance mapper')
+		self.am = UCLS([self.data,self.nRow,self.nCol,self.nBand,self.nPixel, self.p],verbose)
 
 	def extract_endmember(self):
-		print('... Extracting endmembers')
+		if (verbose):
+			print('... Extracting endmembers')
 		self.endmembers = self.ee.extract_endmember()
 
 	def map_abundance(self):
-		print('... Mapping abundances')
+		if (verbose):
+			print('... Mapping abundances')
 		self.am.endmembers = self.endmembers
 		self.abundances = self.am.map_abundance()
 
 	def load_data(self,data_loc):
-		print('... Loading data')
+		if (verbose):
+			print('... Loading data')
 		pkg_data = sio.loadmat(data_loc)
 		self.data = pkg_data['X']
 		self.nRow = self.data.shape[0]
@@ -63,33 +73,39 @@ class DEMO(object):
 		self.nBand = self.data.shape[2]
 
 	def load_groundtruth(self,gt_loc):
-		print('... Loading groundtruth')
+		if (verbose):
+			print('... Loading groundtruth')
 		pkg_gt = sio.loadmat(gt_loc)
 		self.groundtruth = pkg_gt['Y']
 		self.num_gtendm = self.groundtruth.shape[1]
 
 	def convert_2D(self,data):
-		print('... Converting 3D data to 2D')
+		if (verbose):
+			print('... Converting 3D data to 2D')
 		self.nPixel = self.nRow*self.nCol
 		data_2D = np.asmatrix(data.reshape((self.nRow*self.nCol,self.nBand))).T
 		return data_2D
 
 	def convert_3D(self,data):
-		print('... Converting 2D data to 3D')
+		if (verbose):
+			print('... Converting 2D data to 3D')
 		data_3D = np.asarray(data)
 		data_3D = data_3D.reshape((self.nRow,self.nCol,self.p))
 		return data_3D
 
 	def plot_abundance(self,i):
-		print('... Plotting abundance')
+		if (verbose):	
+			print('... Plotting abundance')
 		plt.matshow(self.abundances[:,:,i])
 
 	def plot_groundtruth(self):
-		print('... Plotting groundtruth')
+		if (verbose):
+			print('... Plotting groundtruth')
 		plt.matshow(self.groundtruth[:,:])
 
 	def plot_endmember(self,i):
-		print('... Plotting endmember')
+		if (verbose):
+			print('... Plotting endmember')
 		plt.plot(self.endmembers[:,i])
 		plt.title(str(i))
 		plt.xlabel('wavelength (µm)')
@@ -102,9 +118,10 @@ if __name__ == '__main__':
 	data_loc = "./DATA/grss2018_data.mat"
 	gt_loc = "./DATA/grss2018_groundtruth.mat"
 	num_endm = 20
+	verbose = True
 	# algo = 'VCA'
 
-	# vca = DEMO([data_loc,gt_loc,num_endm,algo])
+	# vca = DEMO([data_loc,gt_loc,num_endm,algo],verbose)
 	# vca.extract_endmember()
 	# vca.map_abundance()
 	# vca.plot_endmember(0)
@@ -117,7 +134,7 @@ if __name__ == '__main__':
 	mutpb = 0.5
 	algo = 'GAEE'
 	
-	gaee = DEMO([data_loc,gt_loc,num_endm,algo,npop,ngen,cxpb,mutpb])
+	gaee = DEMO([data_loc,gt_loc,num_endm,algo,npop,ngen,cxpb,mutpb],verbose)
 	gaee.extract_endmember()
 	gaee.map_abundance()
 	gaee.plot_endmember(0)

@@ -14,7 +14,10 @@ class UCLS(object):
 	endmembers = None
 	abundances = None
 
-	def __init__(self, argin):
+	verbose = True
+
+	def __init__(self, argin, verbose):
+		self.verbose = verbose
 		self.data = argin[0]
 		self.nRow = argin[1]
 		self.nCol = argin[2]
@@ -48,7 +51,10 @@ class NNLS(object):
 	endmembers = None
 	abundances = None
 
-	def __init__(self, argin):
+	verbose = True
+
+	def __init__(self, argin,verbose):
+		self.verbose = verbose
 		self.data = argin[0]
 		self.nRow = argin[1]
 		self.nCol = argin[2]
@@ -89,7 +95,10 @@ class FCLS(object):
 	endmembers = None
 	abundances = None
 
+	verbose = True
+
 	def __init__(self, argin):
+		self.verbose = verbose
 		self.data = argin[0]
 		self.nRow = argin[1]
 		self.nCol = argin[2]
