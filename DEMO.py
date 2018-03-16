@@ -1,4 +1,5 @@
 from VCA import *
+from PPI import *
 from GAEE import *
 from GAEE_IVFm import *
 from MAPS import *
@@ -39,25 +40,31 @@ class DEMO(object):
 			if (verbose):
 				print('... Selecting VCA endmember extractor')
 			self.ee = VCA([self.data,self.nRow,self.nCol,self.nBand,self.nPixel, self.p],self.verbose)
+		if argin[3] == 'PPI':
+			nSkewers = argin[4]
+			initSkewers = argin[5]
+			if (verbose):
+				print('... Selecting PPI endmember extractor')
+			self.ee = PPI([self.data,self.nRow,self.nCol,self.nBand,self.nPixel, self.p, nSkewers, initSkewers],self.verbose)	
 		if argin[3] == 'GAEE':
-			self.npop = argin[4]
-			self.ngen = argin[5]
-			self.cxpb = argin[6]
-			self.mutpb = argin[7]
+			npop = argin[4]
+			ngen = argin[5]
+			cxpb = argin[6]
+			mutpb = argin[7]
 			if (verbose):
 				print('... Selecting GAEE endmember extractor')
-			self.ee = GAEE([self.data,self.nRow,self.nCol,self.nBand,self.nPixel, self.p, self.npop,
-				self.ngen,self.cxpb,self.mutpb],self.verbose)
+			self.ee = GAEE([self.data,self.nRow,self.nCol,self.nBand,self.nPixel, self.p, npop,
+				ngen,cxpb,mutpb],self.verbose)
 
 		if argin[3] == 'GAEE-IVFm':
-			self.npop = argin[4]
-			self.ngen = argin[5]
-			self.cxpb = argin[6]
-			self.mutpb = argin[7]
+			npop = argin[4]
+			ngen = argin[5]
+			cxpb = argin[6]
+			mutpb = argin[7]
 			if (verbose):
 				print('... Selecting GAEE-IVFm endmember extractor')
-			self.ee = GAEEIVFm([self.data,self.nRow,self.nCol,self.nBand,self.nPixel, self.p, self.npop,
-				self.ngen,self.cxpb,self.mutpb],self.verbose)
+			self.ee = GAEEIVFm([self.data,self.nRow,self.nCol,self.nBand,self.nPixel, self.p, npop,
+				ngen,cxpb,mutpb],self.verbose)
 
 		if (verbose):
 			print('... Selecting NNLS abundance mapper')
@@ -130,26 +137,39 @@ if __name__ == '__main__':
 	gt_loc = "./DATA/grss2018_groundtruth.mat"
 	num_endm = 20
 	verbose = True
-	# algo = 'VCA'
+	algo = 'VCA'
 
-	# vca = DEMO([data_loc,gt_loc,num_endm,algo],verbose)
-	# vca.extract_endmember()
-	# vca.map_abundance()
-	# vca.plot_endmember(0)
-	# vca.plot_abundance(0)
-	# plt.show()
+	vca = DEMO([data_loc,gt_loc,num_endm,algo],verbose)
+	vca.extract_endmember()
+	vca.map_abundance()
+	vca.plot_endmember(0)
+	vca.plot_abundance(0)
+	plt.show()
 
-	# npop = 100
-	# ngen = 100
-	# cxpb = 0.3
-	# mutpb = 0.5
-	# algo = 'GAEE'
+	nSkewers = 100
+	initSkewers = None
+	algo = 'PPI'
+
+	ppi = DEMO([data_loc,gt_loc,num_endm,algo,nSkewers,initSkewers],verbose)
+	ppi.extract_endmember()
+	ppi.map_abundance()
+	ppi.plot_endmember(2)
+	ppi.plot_abundance(2)
+	plt.show()
+
+
+	npop = 100
+	ngen = 100
+	cxpb = 0.3
+	mutpb = 0.5
+	algo = 'GAEE'
 	
-	# gaee = DEMO([data_loc,gt_loc,num_endm,algo,npop,ngen,cxpb,mutpb],verbose)
-	# gaee.extract_endmember()
-	# gaee.map_abundance()
-	# gaee.plot_endmember(0)
-	# gaee.plot_abundance(0)
+	gaee = DEMO([data_loc,gt_loc,num_endm,algo,npop,ngen,cxpb,mutpb],verbose)
+	gaee.extract_endmember()
+	gaee.map_abundance()
+	gaee.plot_endmember(0)
+	gaee.plot_abundance(0)
+	plt.show()
 
 	npop = 100
 	ngen = 100
@@ -162,5 +182,4 @@ if __name__ == '__main__':
 	gaee.map_abundance()
 	gaee.plot_endmember(0)
 	gaee.plot_abundance(0)
-
 	plt.show()
