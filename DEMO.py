@@ -137,39 +137,39 @@ if __name__ == '__main__':
 	gt_loc = "./DATA/grss2018_groundtruth.mat"
 	num_endm = 20
 	verbose = True
-	algo = 'VCA'
+	# algo = 'VCA'
 
-	vca = DEMO([data_loc,gt_loc,num_endm,algo],verbose)
-	vca.extract_endmember()
-	vca.map_abundance()
-	vca.plot_endmember(0)
-	vca.plot_abundance(0)
-	plt.show()
+	# vca = DEMO([data_loc,gt_loc,num_endm,algo],verbose)
+	# vca.extract_endmember()
+	# vca.map_abundance()
+	# vca.plot_endmember(0)
+	# vca.plot_abundance(0)
+	# plt.show()
 
-	nSkewers = 100
-	initSkewers = None
-	algo = 'PPI'
+	# nSkewers = 100
+	# initSkewers = None
+	# algo = 'PPI'
 
-	ppi = DEMO([data_loc,gt_loc,num_endm,algo,nSkewers,initSkewers],verbose)
-	ppi.extract_endmember()
-	ppi.map_abundance()
-	ppi.plot_endmember(2)
-	ppi.plot_abundance(2)
-	plt.show()
+	# ppi = DEMO([data_loc,gt_loc,num_endm,algo,nSkewers,initSkewers],verbose)
+	# ppi.extract_endmember()
+	# ppi.map_abundance()
+	# ppi.plot_endmember(0)
+	# ppi.plot_abundance(0)
+	# plt.show()
 
 
-	npop = 100
-	ngen = 100
-	cxpb = 0.3
-	mutpb = 0.5
-	algo = 'GAEE'
+	# npop = 100
+	# ngen = 100
+	# cxpb = 0.3
+	# mutpb = 0.5
+	# algo = 'GAEE'
 	
-	gaee = DEMO([data_loc,gt_loc,num_endm,algo,npop,ngen,cxpb,mutpb],verbose)
-	gaee.extract_endmember()
-	gaee.map_abundance()
-	gaee.plot_endmember(0)
-	gaee.plot_abundance(0)
-	plt.show()
+	# gaee = DEMO([data_loc,gt_loc,num_endm,algo,npop,ngen,cxpb,mutpb],verbose)
+	# gaee.extract_endmember()
+	# gaee.map_abundance()
+	# gaee.plot_endmember(0)
+	# gaee.plot_abundance(0)
+	# plt.show()
 
 	npop = 100
 	ngen = 100
@@ -177,9 +177,9 @@ if __name__ == '__main__':
 	mutpb = 0.5
 	algo = 'GAEE-IVFm'
 
-	gaee = DEMO([data_loc,gt_loc,num_endm,algo,npop,ngen,cxpb,mutpb],verbose)
-	gaee.extract_endmember()
-	gaee.map_abundance()
-	gaee.plot_endmember(0)
-	gaee.plot_abundance(0)
+	gaee_ivfm = DEMO([data_loc,gt_loc,num_endm,algo,npop,ngen,cxpb,mutpb],verbose)
+	gaee_ivfm.extract_endmember()
+	gaee_ivfm.map_abundance()
+	gaee_ivfm.plot_endmember(0)
+	gaee_ivfm.plot_abundance(0)
 	plt.show()
