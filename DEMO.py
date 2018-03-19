@@ -1,5 +1,6 @@
 from VCA import *
 from PPI import *
+from FIPPI import *
 from GAEE import *
 from GAEE_IVFm import *
 from MAPS import *
@@ -45,7 +46,16 @@ class DEMO(object):
 			initSkewers = argin[5]
 			if (verbose):
 				print('... Selecting PPI endmember extractor')
-			self.ee = PPI([self.data,self.nRow,self.nCol,self.nBand,self.nPixel, self.p, nSkewers, initSkewers],self.verbose)	
+			self.ee = PPI([self.data,self.nRow,self.nCol,self.nBand,self.nPixel, self.p, nSkewers, initSkewers],self.verbose)
+		if argin[3] == 'ATGP':
+			if (verbose):
+				print('... Selecting ATGP endmember extractor')
+			self.ee = ATGP([self.data,self.nRow,self.nCol,self.nBand,self.nPixel, self.p],self.verbose)	
+		if argin[3] == 'FIPPI':
+			maxit = argin[4]
+			if (verbose):
+				print('... Selecting FIPPI endmember extractor')
+			self.ee = FIPPI([self.data,self.nRow,self.nCol,self.nBand,self.nPixel, self.p, maxit],self.verbose)	
 		if argin[3] == 'GAEE':
 			npop = argin[4]
 			ngen = argin[5]
@@ -157,6 +167,25 @@ if __name__ == '__main__':
 	# ppi.plot_abundance(0)
 	# plt.show()
 
+	algo = 'ATGP'
+
+	fippi = DEMO([data_loc,gt_loc,num_endm,algo],verbose)
+	fippi.extract_endmember()
+	fippi.map_abundance()
+	fippi.plot_endmember(0)
+	fippi.plot_abundance(0)
+	fippi.show()
+
+	# maxit = 10
+	# algo = 'FIPPI'
+
+	# fippi = DEMO([data_loc,gt_loc,num_endm,algo,maxit],verbose)
+	# fippi.extract_endmember()
+	# fippi.map_abundance()
+	# fippi.plot_endmember(0)
+	# fippi.plot_abundance(0)
+	# fippi.show()
+
 
 	# npop = 100
 	# ngen = 100
@@ -171,15 +200,19 @@ if __name__ == '__main__':
 	# gaee.plot_abundance(0)
 	# plt.show()
 
-	npop = 100
-	ngen = 100
-	cxpb = 0.3
-	mutpb = 0.5
-	algo = 'GAEE-IVFm'
+	# npop = 100
+	# ngen = 100
+	# cxpb = 0.3
+	# mutpb = 0.5
+	# algo = 'GAEE-IVFm'
 
-	gaee_ivfm = DEMO([data_loc,gt_loc,num_endm,algo,npop,ngen,cxpb,mutpb],verbose)
-	gaee_ivfm.extract_endmember()
-	gaee_ivfm.map_abundance()
-	gaee_ivfm.plot_endmember(0)
-	gaee_ivfm.plot_abundance(0)
-	plt.show()
+	# gaee_ivfm = DEMO([data_loc,gt_loc,num_endm,algo,npop,ngen,cxpb,mutpb],verbose)
+	# gaee_ivfm.extract_endmember()
+	# gaee_ivfm.map_abundance()
+	# gaee_ivfm.plot_endmember(0)
+	# gaee_ivfm.plot_abundance(0)
+	# plt.show()
+
+
+
+
