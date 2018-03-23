@@ -6,6 +6,7 @@ from cvxopt import solvers, matrix
 from deap import base
 from deap import creator
 from deap import tools
+
 import random
 
 class GAEE(object):
