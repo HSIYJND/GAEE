@@ -121,6 +121,9 @@ class DEMO(object):
 		data_3D = data_3D.reshape((self.nRow,self.nCol,self.p))
 		return data_3D
 
+	def print_purepixels(self):
+		print(self.ee.purepixels)
+
 	def plot_abundance(self,i):
 		if (verbose):	
 			print('... Plotting abundance')
@@ -146,14 +149,16 @@ if __name__ == '__main__':
 	data_loc = "./DATA/grss2018_data.mat"
 	gt_loc = "./DATA/grss2018_groundtruth.mat"
 	num_endm = 20
-	verbose = True
+	verbose = False
+
 	# algo = 'VCA'
 
 	# vca = DEMO([data_loc,gt_loc,num_endm,algo],verbose)
 	# vca.extract_endmember()
 	# vca.map_abundance()
-	# vca.plot_endmember(0)
-	# vca.plot_abundance(0)
+	# # vca.plot_endmember(0)
+	# # vca.plot_abundance(0)
+	# vca.print_purepixels()
 	# plt.show()
 
 	# nSkewers = 100
@@ -163,42 +168,24 @@ if __name__ == '__main__':
 	# ppi = DEMO([data_loc,gt_loc,num_endm,algo,nSkewers,initSkewers],verbose)
 	# ppi.extract_endmember()
 	# ppi.map_abundance()
-	# ppi.plot_endmember(0)
-	# ppi.plot_abundance(0)
+	# # ppi.plot_endmember(0)
+	# # ppi.plot_abundance(0)
+	# ppi.print_purepixels()
 	# plt.show()
 
-	algo = 'ATGP'
-
-	fippi = DEMO([data_loc,gt_loc,num_endm,algo],verbose)
-	fippi.extract_endmember()
-	fippi.map_abundance()
-	fippi.plot_endmember(0)
-	fippi.plot_abundance(0)
-	fippi.show()
-
-	# maxit = 10
-	# algo = 'FIPPI'
-
-	# fippi = DEMO([data_loc,gt_loc,num_endm,algo,maxit],verbose)
-	# fippi.extract_endmember()
-	# fippi.map_abundance()
-	# fippi.plot_endmember(0)
-	# fippi.plot_abundance(0)
-	# fippi.show()
-
-
-	# npop = 100
-	# ngen = 100
-	# cxpb = 0.3
-	# mutpb = 0.5
-	# algo = 'GAEE'
+	npop = 100
+	ngen = 100
+	cxpb = 0.3
+	mutpb = 0.5
+	algo = 'GAEE'
 	
-	# gaee = DEMO([data_loc,gt_loc,num_endm,algo,npop,ngen,cxpb,mutpb],verbose)
-	# gaee.extract_endmember()
-	# gaee.map_abundance()
+	gaee = DEMO([data_loc,gt_loc,num_endm,algo,npop,ngen,cxpb,mutpb],verbose)
+	gaee.extract_endmember()
+	gaee.map_abundance()
 	# gaee.plot_endmember(0)
 	# gaee.plot_abundance(0)
-	# plt.show()
+	gaee.print_purepixels()
+	plt.show()
 
 	# npop = 100
 	# ngen = 100
@@ -209,10 +196,26 @@ if __name__ == '__main__':
 	# gaee_ivfm = DEMO([data_loc,gt_loc,num_endm,algo,npop,ngen,cxpb,mutpb],verbose)
 	# gaee_ivfm.extract_endmember()
 	# gaee_ivfm.map_abundance()
-	# gaee_ivfm.plot_endmember(0)
-	# gaee_ivfm.plot_abundance(0)
+	# # gaee_ivfm.plot_endmember(0)
+	# # gaee_ivfm.plot_abundance(0)
+	# gaee_ivfm.print_purepixels()
 	# plt.show()
 
+	# algo = 'ATGP'
 
+	# fippi = DEMO([data_loc,gt_loc,num_endm,algo],verbose)
+	# fippi.extract_endmember()
+	# fippi.map_abundance()
+	# fippi.plot_endmember(0)
+	# fippi.plot_abundance(0)
+	# fippi.show()
 
+	# maxit = 10
+	# algo = 'FIPPI'
 
+	# fippi = DEMO([data_loc,gt_loc,num_endm,algo,maxit],verbose)
+	# fippi.extract_endmember()
+	# fippi.map_abundance()
+	# fippi.plot_endmember(0)
+	# fippi.plot_abundance(0)
+	# fippi.show()

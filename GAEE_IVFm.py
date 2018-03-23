@@ -23,6 +23,7 @@ class GAEEIVFm(object):
 	mutpb = None
 	
 	endmembers = None
+	purepixels = None
 
 	verbose = True
 
@@ -172,4 +173,5 @@ class GAEEIVFm(object):
 		if (self.verbose):
 			print('---		Ending endmembers Extracting')
 
+		self.purepixels = best_ind
 		return self.endmembers

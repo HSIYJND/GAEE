@@ -17,6 +17,7 @@ class PPI(object):
 	initSkewers = None
 
 	endmembers = None
+	purepixels = None
 
 	verbose = True
 
@@ -61,6 +62,7 @@ class PPI(object):
 		max_idx = np.argsort(votes, axis=None)
 		end_member_idx = max_idx[-q:][::-1]
 		U = M[:, end_member_idx]
+		self.purepixels = end_member_idx
 		if (self.verbose):
 			print('---		Ending endmembers Extracting')
 		

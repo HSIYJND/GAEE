@@ -23,6 +23,7 @@ class GAEE(object):
 	mutpb = None
 	
 	endmembers = None
+	purepixels = None
 
 	verbose = True
 
@@ -81,7 +82,7 @@ class GAEE(object):
 
 		creator.create("FitnessMax", base.Fitness, weights=(1.0,))
 		creator.create("Individual", list, fitness=creator.FitnessMax)
-	
+		
 		y = np.asarray(data)
 		coeff, score, latent = self.princomp(y.T)
 		data_pca = np.squeeze(score[0:p-1,:])
@@ -148,4 +149,5 @@ class GAEE(object):
 		if (self.verbose):
 			print('---		Ending endmembers Extracting')
 
+		self.purepixels = best_ind
 		return self.endmembers

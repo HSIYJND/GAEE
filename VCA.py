@@ -14,6 +14,7 @@ class VCA(object):
 	p = None
 	
 	endmembers = None
+	purepixels = None
 
 	verbose = True
 
@@ -94,4 +95,5 @@ class VCA(object):
 			print('---		Ending endmembers Extracting')
 		self.y = R_p
 		self.endmembers = R_p[:,indice]
+		self.purepixels = indice
 		return self.endmembers
