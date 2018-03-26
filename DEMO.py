@@ -1,5 +1,6 @@
 from VCA import *
 from PPI import *
+from NFINDR import *
 from FIPPI import *
 from GAEE import *
 from GAEE_IVFm import *
@@ -47,10 +48,15 @@ class DEMO(object):
 			if (verbose):
 				print('... Selecting PPI endmember extractor')
 			self.ee = PPI([self.data,self.nRow,self.nCol,self.nBand,self.nPixel, self.p, nSkewers, initSkewers],self.verbose)
+		if argin[3] == 'NFINDR':
+			maxit = argin[4]
+			if (verbose):
+				print('... Selecting NFINDR endmember extractor')
+			self.ee = NFINDR([self.data.T,self.nRow,self.nCol,self.nBand,self.nPixel, self.p, maxit],self.verbose)
 		if argin[3] == 'ATGP':
 			if (verbose):
 				print('... Selecting ATGP endmember extractor')
-			self.ee = ATGP([self.data,self.nRow,self.nCol,self.nBand,self.nPixel, self.p],self.verbose)	
+			self.ee = ATGP([self.data,self.nRow,self.nCol,self.nBand,self.nPixel, self.p],self.verbose)		
 		if argin[3] == 'FIPPI':
 			maxit = argin[4]
 			if (verbose):
@@ -173,19 +179,30 @@ if __name__ == '__main__':
 	# ppi.print_purepixels()
 	# plt.show()
 
-	npop = 100
-	ngen = 100
-	cxpb = 0.3
-	mutpb = 0.5
-	algo = 'GAEE'
-	
-	gaee = DEMO([data_loc,gt_loc,num_endm,algo,npop,ngen,cxpb,mutpb],verbose)
-	gaee.extract_endmember()
-	gaee.map_abundance()
-	# gaee.plot_endmember(0)
-	# gaee.plot_abundance(0)
-	gaee.print_purepixels()
+	maxit = 3*num_endm
+	algo = 'NFINDR'
+
+	nfindr = DEMO([data_loc,gt_loc,num_endm,algo,maxit],verbose)
+	nfindr.extract_endmember()
+	nfindr.map_abundance()
+	# ppi.plot_endmember(0)
+	# ppi.plot_abundance(0)
+	nfindr.print_purepixels()
 	plt.show()
+
+	# npop = 100
+	# ngen = 100
+	# cxpb = 0.3
+	# mutpb = 0.5
+	# algo = 'GAEE'
+	
+	# gaee = DEMO([data_loc,gt_loc,num_endm,algo,npop,ngen,cxpb,mutpb],verbose)
+	# gaee.extract_endmember()
+	# gaee.map_abundance()
+	# # gaee.plot_endmember(0)
+	# # gaee.plot_abundance(0)
+	# gaee.print_purepixels()
+	# plt.show()
 
 	# npop = 100
 	# ngen = 100
