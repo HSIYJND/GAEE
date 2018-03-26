@@ -149,6 +149,53 @@ class DEMO(object):
 		plt.ylabel('reflectance (%)')
 		plt.tight_layout()
 
+	def SAM(self,a,b):
+		[L, N] = a.shape
+		errRadians = np.zeros(N)
+		b = np.asmatrix(b)
+		for k in range(0,N):
+			tmp = np.asmatrix(a[:,k])
+			s1 = tmp.T
+			s2 = b
+			s1_norm = la.norm(s1)
+			s2_norm = la.norm(s2)
+			sum_s1_s2 = s1*s2.T
+			aux = sum_s1_s2 / (s1_norm * s2_norm)
+			aux[aux>1.0] = 1
+			angle = math.acos(aux)
+			errRadians[k] = angle
+		return errRadians
+
+	def sam_matrix(self):
+		sam_m = np.zeros((self.p,self.num_gtendm));
+		for i in range(0,self.p):
+			sam_m[i,:] = self.SAM(self.data,self.groundtruth[:,i])
+		return sam_m
+
+	def monte_carlo(gt,p_est,p,nBand,slectBands,thr,nRun):    
+		gt = gt[slectBands,:]
+		min_aux = np.ones(p)*100000
+		all_scores = np.zeros((nRun,p))
+		mc_result = np.asmatrix(np.zeros((nBand,p)))
+		for i in range(nRun):
+			##print ("Monte Carlo Run: ",i+1)
+			S = algo(algo_argin)
+			Sam = get_sam_matrix(S,gt,p_est,p)
+			[nS, nIdx, SamScore] = cachassa_sam(S,Sam, p_est, p, thr)
+			for k in range(p):
+				if SamScore[k] < min_aux[k]:
+					mc_result[:,k] = nS[:,k]
+					min_aux[k] = SamScore[k]
+		mc_result = np.asmatrix(mc_result)
+		gt = np.asmatrix(gt)
+		sam_scores = np.zeros(p)
+		sid_scores = np.zeros(p)
+		for l in range(mc_result.shape[1]):
+			sam_scores[l] = SAM_aux(mc_result[:,l],gt[:,l])
+			sid_scores[l] = SID_aux(mc_result[:,l],gt[:,l])
+
+		return [mc_result,sam_scores, sid_scores]
+
 if __name__ == '__main__':
 	# data_loc = "./DATA/cuprite_data.mat"
 	# data_loc = "./DATA/cuprite_groundtruth.mat"
@@ -157,13 +204,14 @@ if __name__ == '__main__':
 	num_endm = 20
 	verbose = False
 
-	# algo = 'VCA'
+	algo = 'VCA'
 
-	# vca = DEMO([data_loc,gt_loc,num_endm,algo],verbose)
-	# vca.extract_endmember()
+	vca = DEMO([data_loc,gt_loc,num_endm,algo],verbose)
+	vca.extract_endmember()
+	vca.sam_matrix()
 	# vca.map_abundance()
-	# # vca.plot_endmember(0)
-	# # vca.plot_abundance(0)
+	# vca.plot_endmember(0)
+	# vca.plot_abundance(0)
 	# vca.print_purepixels()
 	# plt.show()
 
@@ -174,21 +222,21 @@ if __name__ == '__main__':
 	# ppi = DEMO([data_loc,gt_loc,num_endm,algo,nSkewers,initSkewers],verbose)
 	# ppi.extract_endmember()
 	# ppi.map_abundance()
-	# # ppi.plot_endmember(0)
-	# # ppi.plot_abundance(0)
+	# ppi.plot_endmember(0)
+	# ppi.plot_abundance(0)
 	# ppi.print_purepixels()
 	# plt.show()
 
-	maxit = 3*num_endm
-	algo = 'NFINDR'
+	# maxit = 3*num_endm
+	# algo = 'NFINDR'
 
-	nfindr = DEMO([data_loc,gt_loc,num_endm,algo,maxit],verbose)
-	nfindr.extract_endmember()
-	nfindr.map_abundance()
-	# ppi.plot_endmember(0)
-	# ppi.plot_abundance(0)
-	nfindr.print_purepixels()
-	plt.show()
+	# nfindr = DEMO([data_loc,gt_loc,num_endm,algo,maxit],verbose)
+	# nfindr.extract_endmember()
+	# nfindr.map_abundance()
+	# nfindr.plot_endmember(0)
+	# nfindr.plot_abundance(0)
+	# nfindr.print_purepixels()
+	# plt.show()
 
 	# npop = 100
 	# ngen = 100
@@ -199,8 +247,8 @@ if __name__ == '__main__':
 	# gaee = DEMO([data_loc,gt_loc,num_endm,algo,npop,ngen,cxpb,mutpb],verbose)
 	# gaee.extract_endmember()
 	# gaee.map_abundance()
-	# # gaee.plot_endmember(0)
-	# # gaee.plot_abundance(0)
+	# gaee.plot_endmember(0)
+	# gaee.plot_abundance(0)
 	# gaee.print_purepixels()
 	# plt.show()
 
@@ -213,8 +261,8 @@ if __name__ == '__main__':
 	# gaee_ivfm = DEMO([data_loc,gt_loc,num_endm,algo,npop,ngen,cxpb,mutpb],verbose)
 	# gaee_ivfm.extract_endmember()
 	# gaee_ivfm.map_abundance()
-	# # gaee_ivfm.plot_endmember(0)
-	# # gaee_ivfm.plot_abundance(0)
+	# gaee_ivfm.plot_endmember(0)
+	# gaee_ivfm.plot_abundance(0)
 	# gaee_ivfm.print_purepixels()
 	# plt.show()
 
