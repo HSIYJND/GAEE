@@ -167,9 +167,10 @@ class DEMO(object):
 		return errRadians
 
 	def sam_matrix(self):
+		data = np.asmatrix(self.data)		gt = self.groundtruth
 		sam_m = np.zeros((self.p,self.num_gtendm));
 		for i in range(0,self.p):
-			sam_m[i,:] = self.SAM(self.data,self.groundtruth[:,i])
+			sam_m[i,:] = self.SAM(data,gt[:,i])
 		return sam_m
 
 	def monte_carlo(gt,p_est,p,nBand,slectBands,thr,nRun):    
