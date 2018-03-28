@@ -18,7 +18,10 @@ class DEMO(object):
 	nCol = None
 	nBand = None
 	nPixel = None
-	p = None
+	selectedBands = None
+	p = None 
+
+	thr = None
 
 	groundtruth = None
 	num_gtendm = None
@@ -37,46 +40,47 @@ class DEMO(object):
 		self.data = self.convert_2D(self.data)
 		
 		self.p = argin[2]
+		self.thr = argin[3]
 		
-		if argin[3] == 'VCA':
+		if argin[4] == 'VCA':
 			if (verbose):
 				print('... Selecting VCA endmember extractor')
 			self.ee = VCA([self.data,self.nRow,self.nCol,self.nBand,self.nPixel, self.p],self.verbose)
-		if argin[3] == 'PPI':
-			nSkewers = argin[4]
-			initSkewers = argin[5]
+		if argin[4] == 'PPI':
+			nSkewers = argin[5]
+			initSkewers = argin[6]
 			if (verbose):
 				print('... Selecting PPI endmember extractor')
 			self.ee = PPI([self.data,self.nRow,self.nCol,self.nBand,self.nPixel, self.p, nSkewers, initSkewers],self.verbose)
-		if argin[3] == 'NFINDR':
-			maxit = argin[4]
+		if argin[4] == 'NFINDR':
+			maxit = argin[5]
 			if (verbose):
 				print('... Selecting NFINDR endmember extractor')
 			self.ee = NFINDR([self.data.T,self.nRow,self.nCol,self.nBand,self.nPixel, self.p, maxit],self.verbose)
-		if argin[3] == 'ATGP':
+		if argin[4] == 'ATGP':
 			if (verbose):
 				print('... Selecting ATGP endmember extractor')
 			self.ee = ATGP([self.data,self.nRow,self.nCol,self.nBand,self.nPixel, self.p],self.verbose)		
-		if argin[3] == 'FIPPI':
-			maxit = argin[4]
+		if argin[4] == 'FIPPI':
+			maxit = argin[5]
 			if (verbose):
 				print('... Selecting FIPPI endmember extractor')
 			self.ee = FIPPI([self.data,self.nRow,self.nCol,self.nBand,self.nPixel, self.p, maxit],self.verbose)	
-		if argin[3] == 'GAEE':
-			npop = argin[4]
-			ngen = argin[5]
-			cxpb = argin[6]
-			mutpb = argin[7]
+		if argin[4] == 'GAEE':
+			npop = argin[5]
+			ngen = argin[6]
+			cxpb = argin[7]
+			mutpb = argin[8]
 			if (verbose):
 				print('... Selecting GAEE endmember extractor')
 			self.ee = GAEE([self.data,self.nRow,self.nCol,self.nBand,self.nPixel, self.p, npop,
 				ngen,cxpb,mutpb],self.verbose)
 
 		if argin[3] == 'GAEE-IVFm':
-			npop = argin[4]
-			ngen = argin[5]
-			cxpb = argin[6]
-			mutpb = argin[7]
+			npop = argin[5]
+			ngen = argin[6]
+			cxpb = argin[7]
+			mutpb = argin[8]
 			if (verbose):
 				print('... Selecting GAEE-IVFm endmember extractor')
 			self.ee = GAEEIVFm([self.data,self.nRow,self.nCol,self.nBand,self.nPixel, self.p, npop,
@@ -100,11 +104,14 @@ class DEMO(object):
 	def load_data(self,data_loc):
 		if (verbose):
 			print('... Loading data')
+
 		pkg_data = sio.loadmat(data_loc)
 		self.data = pkg_data['X']
+		
 		self.nRow = self.data.shape[0]
 		self.nCol = self.data.shape[1]
 		self.nBand = self.data.shape[2]
+		self.selectedBands = pkg_data['BANDS'][0]
 
 	def load_groundtruth(self,gt_loc):
 		if (verbose):
@@ -135,7 +142,16 @@ class DEMO(object):
 			print('... Plotting abundance')
 		plt.matshow(self.abundances[:,:,i])
 
-	def plot_groundtruth(self):
+	def plot_groundtruth(self,i):
+		if (verbose):
+			print('... Plotting groundtruth')
+		plt.plot(self.groundtruth[:,i])
+		plt.title(str(i))
+		plt.xlabel('wavelength (µm)')
+		plt.ylabel('reflectance (%)')
+		plt.tight_layout()
+
+	def plot_groundtruth_ab(self):
 		if (verbose):
 			print('... Plotting groundtruth')
 		plt.matshow(self.groundtruth[:,:])
@@ -163,15 +179,87 @@ class DEMO(object):
 			aux = sum_s1_s2 / (s1_norm * s2_norm)
 			aux[aux>1.0] = 1
 			angle = math.acos(aux)
-			errRadians[k] = angle
+			errRadians[k] = abs(angle)
 		return errRadians
 
+
+	def best_match(self): # Best Estimated endmember for the groundtruth
+		sam = np.zeros((self.num_gtendm,self.p))
+		for i in range(self.endmembers.shape[1]):
+			sam[i,:] = self.SAM(self.endmembers,self.groundtruth[self.selectedBands,:][:,i])
+
+		idxs = [list(x) for x in np.argsort(sam,axis=1)]
+		values = [list(x) for x in np.sort(sam,axis=1)]
+		pidxs = list(range(self.p))
+		aux = []
+
+		for i in range(self.num_gtendm):
+			for j in range(self.p):
+				aux.append([pidxs[i],idxs[i][j],values[i][j]])
+
+		aux = sorted(aux, key=lambda x: x[2])
+		new_idx = [0]*self.p
+		new_value = [0]*self.p
+
+		for i in range(self.p):
+			a_idx, b_idx, c_value = aux[0]
+			new_idx[a_idx] = b_idx
+			new_value[a_idx] = c_value
+			aux = [x for x in aux if x[0] != a_idx and x[1] != b_idx]
+
+		newData = self.endmembers[:,new_idx]
+
+		for j in range(self.p):
+			self.plot_groundtruth(j)
+			self.plot_endmember(j)
+		plt.show()
+		self.endmembers = newData
+
+		for j in range(self.p):
+			self.plot_groundtruth(j)
+			self.plot_endmember(j)
+		plt.show()
+
+	def monte_carlo(self):
+		print('Dh')
+
+	def best_run(self): # Monte Carlo Best Estimated EM with avg SAM or SID
+		print('Bh')
+
+	def best_overall(self): # Monte Carlo Best Estimated Member for All Runs
+		print('Ch')
+
 	def sam_matrix(self):
-		data = np.asmatrix(self.data)		gt = self.groundtruth
+		data = np.asmatrix(self.endmembers)
+		gt = np.asmatrix(self.groundtruth)
 		sam_m = np.zeros((self.p,self.num_gtendm));
+		print(data.shape)
+		print(gt.shape)
 		for i in range(0,self.p):
 			sam_m[i,:] = self.SAM(data,gt[:,i])
 		return sam_m
+
+	def cachassa_sam (data,sam,p_est,p, thr):
+		porra = [list(x) for x in np.argsort(sam,axis=1)]
+		porra2 = [list(x) for x in np.sort(sam,axis=1)]
+		porra3 = list(range(p_est))
+		coco = []
+		for i in range(p):
+			for j in range(p_est):
+				coco.append([porra3[i],porra[i][j],porra2[i][j]])
+		coco = sorted(coco, key=lambda x: x[2])
+		licor = [0]*p
+		vinho = [0]*p
+		for i in range(p):
+			a, b, c = coco[0]
+			licor[a] = b
+			vinho[a] = c
+			coco = [x for x in coco if x[0] != a and x[1] != b]
+		newData = data[:,licor]
+		for i, x in enumerate(vinho):
+			if x > thr:
+				newData[:,i] = np.NaN
+		return [newData, licor, vinho]
 
 	def monte_carlo(gt,p_est,p,nBand,slectBands,thr,nRun):    
 		gt = gt[slectBands,:]
@@ -198,18 +286,20 @@ class DEMO(object):
 		return [mc_result,sam_scores, sid_scores]
 
 if __name__ == '__main__':
-	# data_loc = "./DATA/cuprite_data.mat"
-	# data_loc = "./DATA/cuprite_groundtruth.mat"
-	data_loc = "./DATA/grss2018_data.mat"
-	gt_loc = "./DATA/grss2018_groundtruth.mat"
-	num_endm = 20
+	data_loc = "./DATA/cuprite_data.mat"
+	gt_loc = "./DATA/cuprite_groundtruth.mat"
+
+	# data_loc = "./DATA/grss2018_data.mat"
+	# gt_loc = "./DATA/grss2018_groundtruth.mat"
+	num_endm = 12
 	verbose = False
+	thr = 0.8
 
 	algo = 'VCA'
 
-	vca = DEMO([data_loc,gt_loc,num_endm,algo],verbose)
+	vca = DEMO([data_loc,gt_loc,num_endm,thr,algo],verbose)
 	vca.extract_endmember()
-	vca.sam_matrix()
+	vca.best_match()
 	# vca.map_abundance()
 	# vca.plot_endmember(0)
 	# vca.plot_abundance(0)
