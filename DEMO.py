@@ -179,11 +179,22 @@ class DEMO(object):
 			aux = sum_s1_s2 / (s1_norm * s2_norm)
 			aux[aux>1.0] = 1
 			angle = math.acos(aux)
-			errRadians[k] = abs(angle)
+			errRadians[k] = angle
 		return errRadians
 
+	def SID(self,s1,s2):
+		[L, N] = s1.shape
+		errRadians = np.zeros(N)
+		s1 = np.asarray(s1)
+		s2 = np.asarray(s2)
+		for k in range(0,N):
+			tmp = s1[:,k]
+			p = (tmp / np.sum(tmp)) + np.spacing(1)
+			q = (s2 / np.sum(s2)) + np.spacing(1)
+			errRadians[k] = np.sum(p.T * np.log(p / q) + q * np.log(q / p))
+		return errRadians
 
-	def best_match(self): # Best Estimated endmember for the groundtruth
+	def best_sam_match(self): # Best Estimated endmember for the groundtruth
 		sam = np.zeros((self.num_gtendm,self.p))
 		for i in range(self.endmembers.shape[1]):
 			sam[i,:] = self.SAM(self.endmembers,self.groundtruth[self.selectedBands,:][:,i])
@@ -209,57 +220,62 @@ class DEMO(object):
 
 		newData = self.endmembers[:,new_idx]
 
-		for j in range(self.p):
-			self.plot_groundtruth(j)
-			self.plot_endmember(j)
-		plt.show()
-		self.endmembers = newData
+		# self.endmembers = newData
+		# print(new_value)
 
-		for j in range(self.p):
-			self.plot_groundtruth(j)
-			self.plot_endmember(j)
-		plt.show()
+		return [newData, new_idx, new_value]
+
+	def best_sid_match(self): # Best Estimated endmember for the groundtruth
+		sid = np.zeros((self.num_gtendm,self.p))
+		for i in range(self.endmembers.shape[1]):
+			sid[i,:] = self.SAM(self.endmembers,self.groundtruth[self.selectedBands,:][:,i])
+	
+		idxs = [list(x) for x in np.argsort(sid,axis=1)]
+		values = [list(x) for x in np.sort(sid,axis=1)]
+		pidxs = list(range(self.p))
+		aux = []
+
+		for i in range(self.num_gtendm):
+			for j in range(self.p):
+				aux.append([pidxs[i],idxs[i][j],values[i][j]])
+
+		aux = sorted(aux, key=lambda x: x[2])
+		new_idx = [0]*self.p
+		new_value = [0]*self.p
+
+		for i in range(self.p):
+			a_idx, b_idx, c_value = aux[0]
+			new_idx[a_idx] = b_idx
+			new_value[a_idx] = c_value
+			aux = [x for x in aux if x[0] != a_idx and x[1] != b_idx]
+
+		newData = self.endmembers[:,new_idx]
+
+		# self.endmembers = newData
+		# print(new_value)
+
+		return [newData, new_idx, new_value]
 
 	def monte_carlo(self):
 		print('Dh')
 
-	def best_run(self): # Monte Carlo Best Estimated EM with avg SAM or SID
-		print('Bh')
-
+	def best_run(self,mrun,metric): # Monte Carlo Best Estimated EM with avg SAM or SID
+		avg_run = 99999
+		best_data = None
+		for i in range(mrun):
+			self.extract_endmember()
+			if (metric == 'SAM'):
+				[newData, new_idx, new_value] = self.best_sam_match()
+			if (metric == 'SID'):
+				[newData, new_idx, new_value] = self.best_sid_match()
+			print(np.mean(new_value))
+			if(np.mean(new_value) < avg_run):
+				avg_run = np.mean(new_value)
+				best_data = newData	
+		print('BEST')
+		print(np.mean(new_value))
 	def best_overall(self): # Monte Carlo Best Estimated Member for All Runs
 		print('Ch')
-
-	def sam_matrix(self):
-		data = np.asmatrix(self.endmembers)
-		gt = np.asmatrix(self.groundtruth)
-		sam_m = np.zeros((self.p,self.num_gtendm));
-		print(data.shape)
-		print(gt.shape)
-		for i in range(0,self.p):
-			sam_m[i,:] = self.SAM(data,gt[:,i])
-		return sam_m
-
-	def cachassa_sam (data,sam,p_est,p, thr):
-		porra = [list(x) for x in np.argsort(sam,axis=1)]
-		porra2 = [list(x) for x in np.sort(sam,axis=1)]
-		porra3 = list(range(p_est))
-		coco = []
-		for i in range(p):
-			for j in range(p_est):
-				coco.append([porra3[i],porra[i][j],porra2[i][j]])
-		coco = sorted(coco, key=lambda x: x[2])
-		licor = [0]*p
-		vinho = [0]*p
-		for i in range(p):
-			a, b, c = coco[0]
-			licor[a] = b
-			vinho[a] = c
-			coco = [x for x in coco if x[0] != a and x[1] != b]
-		newData = data[:,licor]
-		for i, x in enumerate(vinho):
-			if x > thr:
-				newData[:,i] = np.NaN
-		return [newData, licor, vinho]
 
 	def monte_carlo(gt,p_est,p,nBand,slectBands,thr,nRun):    
 		gt = gt[slectBands,:]
@@ -288,19 +304,23 @@ class DEMO(object):
 if __name__ == '__main__':
 	data_loc = "./DATA/cuprite_data.mat"
 	gt_loc = "./DATA/cuprite_groundtruth.mat"
-
 	# data_loc = "./DATA/grss2018_data.mat"
 	# gt_loc = "./DATA/grss2018_groundtruth.mat"
+
 	num_endm = 12
 	verbose = False
 	thr = 0.8
+	mrun = 10
+	metric = 'SAM'
 
 	algo = 'VCA'
 
 	vca = DEMO([data_loc,gt_loc,num_endm,thr,algo],verbose)
-	vca.extract_endmember()
-	vca.best_match()
+	vca.best_run(mrun,metric)
+	# vca.extract_endmember()
+	# vca.best_sam_match()
 	# vca.map_abundance()
+	# vca.plot_groundtruth(0)
 	# vca.plot_endmember(0)
 	# vca.plot_abundance(0)
 	# vca.print_purepixels()
