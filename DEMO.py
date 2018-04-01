@@ -7,8 +7,11 @@ from GAEE_IVFm import *
 from MAPS import *
 import scipy.io as sio
 import matplotlib.pyplot as plt
+import xlsxwriter
 
 class DEMO(object):
+
+	name = None
 
 	ee = None
 	am = None
@@ -26,8 +29,18 @@ class DEMO(object):
 	groundtruth = None
 	num_gtendm = None
 
-	endmembers = None
+	raw_endmembers = None
 	abundances = None
+
+	sam_endmembers = None
+	sam_values = None
+	sam_mean = None
+	sam_std = None
+
+	sid_endmembers = None
+	sid_values = None
+	sid_mean = None
+	sid_std = None
 
 	verbose = True
 
@@ -40,47 +53,47 @@ class DEMO(object):
 		self.data = self.convert_2D(self.data)
 		
 		self.p = argin[2]
-		self.thr = argin[3]
+		self.name = argin[3]
 		
-		if argin[4] == 'VCA':
+		if argin[3] == 'VCA':
 			if (verbose):
 				print('... Selecting VCA endmember extractor')
 			self.ee = VCA([self.data,self.nRow,self.nCol,self.nBand,self.nPixel, self.p],self.verbose)
-		if argin[4] == 'PPI':
-			nSkewers = argin[5]
-			initSkewers = argin[6]
+		if argin[3] == 'PPI':
+			nSkewers = argin[4]
+			initSkewers = argin[5]
 			if (verbose):
 				print('... Selecting PPI endmember extractor')
 			self.ee = PPI([self.data,self.nRow,self.nCol,self.nBand,self.nPixel, self.p, nSkewers, initSkewers],self.verbose)
-		if argin[4] == 'NFINDR':
-			maxit = argin[5]
+		if argin[3] == 'NFINDR':
+			maxit = argin[4]
 			if (verbose):
 				print('... Selecting NFINDR endmember extractor')
 			self.ee = NFINDR([self.data.T,self.nRow,self.nCol,self.nBand,self.nPixel, self.p, maxit],self.verbose)
-		if argin[4] == 'ATGP':
+		if argin[3] == 'ATGP':
 			if (verbose):
 				print('... Selecting ATGP endmember extractor')
 			self.ee = ATGP([self.data,self.nRow,self.nCol,self.nBand,self.nPixel, self.p],self.verbose)		
-		if argin[4] == 'FIPPI':
-			maxit = argin[5]
+		if argin[3] == 'FIPPI':
+			maxit = argin[4]
 			if (verbose):
 				print('... Selecting FIPPI endmember extractor')
 			self.ee = FIPPI([self.data,self.nRow,self.nCol,self.nBand,self.nPixel, self.p, maxit],self.verbose)	
-		if argin[4] == 'GAEE':
-			npop = argin[5]
-			ngen = argin[6]
-			cxpb = argin[7]
-			mutpb = argin[8]
+		if argin[3] == 'GAEE':
+			npop = argin[4]
+			ngen = argin[5]
+			cxpb = argin[6]
+			mutpb = argin[7]
 			if (verbose):
 				print('... Selecting GAEE endmember extractor')
 			self.ee = GAEE([self.data,self.nRow,self.nCol,self.nBand,self.nPixel, self.p, npop,
 				ngen,cxpb,mutpb],self.verbose)
 
 		if argin[3] == 'GAEE-IVFm':
-			npop = argin[5]
-			ngen = argin[6]
-			cxpb = argin[7]
-			mutpb = argin[8]
+			npop = argin[4]
+			ngen = argin[5]
+			cxpb = argin[6]
+			mutpb = argin[7]
 			if (verbose):
 				print('... Selecting GAEE-IVFm endmember extractor')
 			self.ee = GAEEIVFm([self.data,self.nRow,self.nCol,self.nBand,self.nPixel, self.p, npop,
@@ -93,12 +106,12 @@ class DEMO(object):
 	def extract_endmember(self):
 		if (verbose):
 			print('... Extracting endmembers')
-		self.endmembers = self.ee.extract_endmember()
+		self.raw_endmembers = self.ee.extract_endmember()
 
 	def map_abundance(self):
 		if (verbose):
 			print('... Mapping abundances')
-		self.am.endmembers = self.endmembers
+		self.am.endmembers = self.raw_endmembers
 		self.abundances = self.am.map_abundance()
 
 	def load_data(self,data_loc):
@@ -135,6 +148,8 @@ class DEMO(object):
 		return data_3D
 
 	def print_purepixels(self):
+		if (verbose):
+			print('... Printing pure pixels')
 		print(self.ee.purepixels)
 
 	def plot_abundance(self,i):
@@ -159,13 +174,15 @@ class DEMO(object):
 	def plot_endmember(self,i):
 		if (verbose):
 			print('... Plotting endmember')
-		plt.plot(self.endmembers[:,i])
+		plt.plot(self.raw_endmembers[:,i])
 		plt.title(str(i))
 		plt.xlabel('wavelength (µm)')
 		plt.ylabel('reflectance (%)')
 		plt.tight_layout()
 
 	def SAM(self,a,b):
+		if (verbose):
+			print('... Applying SAM metric')
 		[L, N] = a.shape
 		errRadians = np.zeros(N)
 		b = np.asmatrix(b)
@@ -183,6 +200,8 @@ class DEMO(object):
 		return errRadians
 
 	def SID(self,s1,s2):
+		if (verbose):
+			print('... Applying SID metric')
 		[L, N] = s1.shape
 		errRadians = np.zeros(N)
 		s1 = np.asarray(s1)
@@ -191,13 +210,24 @@ class DEMO(object):
 			tmp = s1[:,k]
 			p = (tmp / np.sum(tmp)) + np.spacing(1)
 			q = (s2 / np.sum(s2)) + np.spacing(1)
-			errRadians[k] = np.sum(p.T * np.log(p / q) + q * np.log(q / p))
+			angle = np.sum(p.T * np.log(p / q) + q * np.log(q / p))
+
+			if np.isnan(angle):
+				errRadians[k] = 0
+			else:
+				errRadians[k] = angle
+
 		return errRadians
 
 	def best_sam_match(self): # Best Estimated endmember for the groundtruth
+		if (verbose):
+				print('... Matching best endmember and groundtruth pair')
 		sam = np.zeros((self.num_gtendm,self.p))
-		for i in range(self.endmembers.shape[1]):
-			sam[i,:] = self.SAM(self.endmembers,self.groundtruth[self.selectedBands,:][:,i])
+		sid = np.zeros((self.num_gtendm,self.p))
+
+		for i in range(self.raw_endmembers.shape[1]):
+			sam[i,:] = self.SAM(self.raw_endmembers,self.groundtruth[self.selectedBands,:][:,i])
+			sid[i,:] = self.SID(self.raw_endmembers,self.groundtruth[self.selectedBands,:][:,i])
 
 		idxs = [list(x) for x in np.argsort(sam,axis=1)]
 		values = [list(x) for x in np.sort(sam,axis=1)]
@@ -218,17 +248,16 @@ class DEMO(object):
 			new_value[a_idx] = c_value
 			aux = [x for x in aux if x[0] != a_idx and x[1] != b_idx]
 
-		newData = self.endmembers[:,new_idx]
+		self.sam_endmembers = self.raw_endmembers[:,new_idx]
 
-		# self.endmembers = newData
-		# print(new_value)
-
-		return [newData, new_idx, new_value]
+		return [new_idx, new_value]
 
 	def best_sid_match(self): # Best Estimated endmember for the groundtruth
+		if (verbose):
+				print('... Matching best endmember and groundtruth pair')
 		sid = np.zeros((self.num_gtendm,self.p))
-		for i in range(self.endmembers.shape[1]):
-			sid[i,:] = self.SAM(self.endmembers,self.groundtruth[self.selectedBands,:][:,i])
+		for i in range(self.raw_endmembers.shape[1]):
+			sid[i,:] = self.SID(self.raw_endmembers,self.groundtruth[self.selectedBands,:][:,i])
 	
 		idxs = [list(x) for x in np.argsort(sid,axis=1)]
 		values = [list(x) for x in np.sort(sid,axis=1)]
@@ -249,149 +278,122 @@ class DEMO(object):
 			new_value[a_idx] = c_value
 			aux = [x for x in aux if x[0] != a_idx and x[1] != b_idx]
 
-		newData = self.endmembers[:,new_idx]
+		self.sid_endmembers = self.raw_endmembers[:,new_idx]
 
-		# self.endmembers = newData
-		# print(new_value)
+		return [new_idx, new_value]
 
-		return [newData, new_idx, new_value]
+	def best_run(self,mrun): # Monte Carlo Best Estimated EM with avg SAM or SID
+		if (verbose):
+				print('... Starting Monte Carlo set of runs')
+		sam_best_run = 9999
+		sam_best_values = None
+		sam_best_idx = None
+		sam_best_data = None
+		sam_all_runs_value = np.zeros((mrun,self.p))
 
-	def monte_carlo(self):
-		print('Dh')
+		sid_best_run = 9999
+		sid_best_values = None
+		sid_best_idx = None
+		sid_best_data = None
+		sid_all_runs_value = np.zeros((mrun,self.p))
 
-	def best_run(self,mrun,metric): # Monte Carlo Best Estimated EM with avg SAM or SID
-		avg_run = 99999
-		best_data = None
 		for i in range(mrun):
 			self.extract_endmember()
-			if (metric == 'SAM'):
-				[newData, new_idx, new_value] = self.best_sam_match()
-			if (metric == 'SID'):
-				[newData, new_idx, new_value] = self.best_sid_match()
-			print(np.mean(new_value))
-			if(np.mean(new_value) < avg_run):
-				avg_run = np.mean(new_value)
-				best_data = newData	
-		print('BEST')
-		print(np.mean(new_value))
-	def best_overall(self): # Monte Carlo Best Estimated Member for All Runs
-		print('Ch')
+			[sam_idx, sam_value] = self.best_sam_match()
+			[sid_idx, sid_value] = self.best_sid_match()
+			
+			sam_all_runs_value[i,:] = sam_value
+			sid_all_runs_value[i,:] = sid_value
 
-	def monte_carlo(gt,p_est,p,nBand,slectBands,thr,nRun):    
-		gt = gt[slectBands,:]
-		min_aux = np.ones(p)*100000
-		all_scores = np.zeros((nRun,p))
-		mc_result = np.asmatrix(np.zeros((nBand,p)))
-		for i in range(nRun):
-			##print ("Monte Carlo Run: ",i+1)
-			S = algo(algo_argin)
-			Sam = get_sam_matrix(S,gt,p_est,p)
-			[nS, nIdx, SamScore] = cachassa_sam(S,Sam, p_est, p, thr)
-			for k in range(p):
-				if SamScore[k] < min_aux[k]:
-					mc_result[:,k] = nS[:,k]
-					min_aux[k] = SamScore[k]
-		mc_result = np.asmatrix(mc_result)
-		gt = np.asmatrix(gt)
-		sam_scores = np.zeros(p)
-		sid_scores = np.zeros(p)
-		for l in range(mc_result.shape[1]):
-			sam_scores[l] = SAM_aux(mc_result[:,l],gt[:,l])
-			sid_scores[l] = SID_aux(mc_result[:,l],gt[:,l])
+			if(np.mean(sam_value) < sam_best_run):
+				sam_best_run = np.mean(sam_value)
+				sam_best_values = sam_value
+				sam_best_idx = sam_idx
+				sam_best_data = self.sam_endmembers
 
-		return [mc_result,sam_scores, sid_scores]
+			if(np.mean(sid_value) < sid_best_run):
+				sid_best_run = np.mean(sid_value)
+				sid_best_values = sid_value
+				sid_best_idx = sid_idx
+				sid_best_data = self.sid_endmembers
+
+		
+		print(sam_value)
+		self.sam_endmembers = sam_best_data
+		self.sam_values = sam_best_values
+		self.sam_mean = np.mean(sam_all_runs_value,axis=0)
+		self.sam_std = np.std(sam_all_runs_value,axis=0)
+
+		print(sid_value)
+		print(np.mean(sid_value))
+		self.sid_endmembers = sid_best_data
+		self.sid_values = sid_best_values
+		self.sid_mean = np.mean(sid_all_runs_value,axis=0)
+		self.sid_std = np.std(sid_all_runs_value,axis=0)
 
 if __name__ == '__main__':
 	data_loc = "./DATA/cuprite_data.mat"
 	gt_loc = "./DATA/cuprite_groundtruth.mat"
+
 	# data_loc = "./DATA/grss2018_data.mat"
 	# gt_loc = "./DATA/grss2018_groundtruth.mat"
+
+	endmember = ['Alunite','Andradite','Buddingtonite','Dumortierite','Kaolinite_1','Kaolinite_2','Muscovite',
+				'Montmonrillonite','Nontronite','Pyrope','Sphene','Chalcedony']
 
 	num_endm = 12
 	verbose = False
 	thr = 0.8
-	mrun = 10
-	metric = 'SAM'
+	mrun = 2
 
-	algo = 'VCA'
+	nSkewers = 100
+	initSkewers = None
 
-	vca = DEMO([data_loc,gt_loc,num_endm,thr,algo],verbose)
-	vca.best_run(mrun,metric)
-	# vca.extract_endmember()
-	# vca.best_sam_match()
-	# vca.map_abundance()
-	# vca.plot_groundtruth(0)
-	# vca.plot_endmember(0)
-	# vca.plot_abundance(0)
-	# vca.print_purepixels()
-	# plt.show()
+	maxit = 3*num_endm
 
-	# nSkewers = 100
-	# initSkewers = None
-	# algo = 'PPI'
+	npop = 100
+	ngen = 100
+	cxpb = 0.3
+	mutpb = 0.5
 
-	# ppi = DEMO([data_loc,gt_loc,num_endm,algo,nSkewers,initSkewers],verbose)
-	# ppi.extract_endmember()
-	# ppi.map_abundance()
-	# ppi.plot_endmember(0)
-	# ppi.plot_abundance(0)
-	# ppi.print_purepixels()
-	# plt.show()
+	ppi = DEMO([data_loc,gt_loc,num_endm,'PPI',nSkewers,initSkewers],verbose)
+	nfindr = DEMO([data_loc,gt_loc,num_endm,'NFINDR',maxit],verbose)
+	vca = DEMO([data_loc,gt_loc,num_endm,'VCA'],verbose)
+	gaee = DEMO([data_loc,gt_loc,num_endm,'GAEE',npop,ngen,cxpb,mutpb],verbose)
+	ivfm = DEMO([data_loc,gt_loc,num_endm,'GAEE-IVFm',npop,ngen,cxpb,mutpb],verbose)
 
-	# maxit = 3*num_endm
-	# algo = 'NFINDR'
 
-	# nfindr = DEMO([data_loc,gt_loc,num_endm,algo,maxit],verbose)
-	# nfindr.extract_endmember()
-	# nfindr.map_abundance()
-	# nfindr.plot_endmember(0)
-	# nfindr.plot_abundance(0)
-	# nfindr.print_purepixels()
-	# plt.show()
+	algo = [ppi, nfindr, vca, gaee, ivfm]
 
-	# npop = 100
-	# ngen = 100
-	# cxpb = 0.3
-	# mutpb = 0.5
-	# algo = 'GAEE'
-	
-	# gaee = DEMO([data_loc,gt_loc,num_endm,algo,npop,ngen,cxpb,mutpb],verbose)
-	# gaee.extract_endmember()
-	# gaee.map_abundance()
-	# gaee.plot_endmember(0)
-	# gaee.plot_abundance(0)
-	# gaee.print_purepixels()
-	# plt.show()
 
-	# npop = 100
-	# ngen = 100
-	# cxpb = 0.3
-	# mutpb = 0.5
-	# algo = 'GAEE-IVFm'
+	results = xlsxwriter.Workbook('results.xlsx')
+	formato = results.add_format({'align':'center','valign':'vcenter'})
+	tab1 = results.add_worksheet('TAB1-SAM')
+	tab2 = results.add_worksheet('TAB2-SID')
 
-	# gaee_ivfm = DEMO([data_loc,gt_loc,num_endm,algo,npop,ngen,cxpb,mutpb],verbose)
-	# gaee_ivfm.extract_endmember()
-	# gaee_ivfm.map_abundance()
-	# gaee_ivfm.plot_endmember(0)
-	# gaee_ivfm.plot_abundance(0)
-	# gaee_ivfm.print_purepixels()
-	# plt.show()
+	col = 1
+	for l in algo:
+		l.best_run(mrun)
+		row = 0
+		tab1.write(row,col,l.name,formato)
+		tab2.write(row,col,l.name,formato)
+		row += 1
+		for i in range(0,len(endmember)):
+			tab1.write(row,0,endmember[i],formato)
+			tab2.write(row,0,endmember[i],formato)
+			tab1.write(row,col,l.sam_values[i],formato)
+			tab2.write(row,col,l.sid_values[i],formato)
+			row+=1
+		tab1.write(row,col,'Mean',formato)
+		tab1.write(row+1,col,np.mean(l.sam_mean),formato)
+		tab1.write(row,col+1,'Std',formato)
+		tab1.write(row+1,col+1,np.mean(l.sam_std),formato)
+		tab2.write(row,col,'Mean',formato)
+		tab2.write(row+1,col,np.mean(l.sid_mean),formato)
+		tab2.write(row,col+1,'Std',formato)
+		tab2.write(row+1,col+1,np.mean(l.sid_std),formato)
+		col+=2
+	results.close()
 
-	# algo = 'ATGP'
 
-	# fippi = DEMO([data_loc,gt_loc,num_endm,algo],verbose)
-	# fippi.extract_endmember()
-	# fippi.map_abundance()
-	# fippi.plot_endmember(0)
-	# fippi.plot_abundance(0)
-	# fippi.show()
 
-	# maxit = 10
-	# algo = 'FIPPI'
-
-	# fippi = DEMO([data_loc,gt_loc,num_endm,algo,maxit],verbose)
-	# fippi.extract_endmember()
-	# fippi.map_abundance()
-	# fippi.plot_endmember(0)
-	# fippi.plot_abundance(0)
-	# fippi.show()
