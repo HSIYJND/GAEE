@@ -317,15 +317,11 @@ class DEMO(object):
 				sid_best_idx = sid_idx
 				sid_best_data = self.sid_endmembers
 
-		
-		print(sam_value)
 		self.sam_endmembers = sam_best_data
 		self.sam_values = sam_best_values
 		self.sam_mean = np.mean(sam_all_runs_value,axis=0)
 		self.sam_std = np.std(sam_all_runs_value,axis=0)
 
-		print(sid_value)
-		print(np.mean(sid_value))
 		self.sid_endmembers = sid_best_data
 		self.sid_values = sid_best_values
 		self.sid_mean = np.mean(sid_all_runs_value,axis=0)
