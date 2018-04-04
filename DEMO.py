@@ -382,14 +382,14 @@ if __name__ == '__main__':
 	file.write("Endmember Extraction is a critical step in hyperspectral image analysis and classification. It is an useful method to decompose a mixed spectrum into a collection of spectra and their corresponding proportions. In this paper, we solve a linear endmember extraction problem as an evolutionary optimization task, maximizing the Simplex Volume in the endmember space. We propose a standard genetic algorithm and a variation with In Vitro Fertilization module (IVFm) to find the best solutions and compare the results with the state-of-art Vertex Component Analysis (VCA) method and the traditional algorithms Pixel Purity Index (PPI) and N-FINDR. The experimental results on real and synthetic hyperspectral data confirms the overcome in performance and accuracy of the proposed approaches over the mentioned algorithms.\n\n")
 
 	file.write('Envirionment Setup:\n\n')
-	file.write('Monte Carlo runs: %s  ' % mrun)
-	file.write('Number of endmembers to estimate: %s  ' % num_endm)
-	file.write('Number of skewers (PPI): %s  ' % nSkewers)
+	file.write('Monte Carlo runs: %s \n\n' % mrun)
+	file.write('Number of endmembers to estimate: %s \n\n' % num_endm)
+	file.write('Number of skewers (PPI): %s \n\n' % nSkewers)
 	file.write('Maximum number of iterations (N-FINDR): %s \n\n' % maxit)
 
-	file.write('Number of individuals in each generation: %s  ' % npop)
-	file.write('Number of generations: %s  ' % ngen)
-	file.write('Crossover probability: %s  ' % cxpb)
+	file.write('Number of individuals in each generation: %s \n\n' % npop)
+	file.write('Number of generations: %s \n\n' % ngen)
+	file.write('Crossover probability: %s \n\n' % cxpb)
 	file.write('Mutation probability: %s \n\n' %mutpb)
 
 	file.write('### Comparison between the ground-truth Laboratory Reflectances and extracted endmembers using PPI, N-FINDR, VCA, GAEE, GAEE-IVFm using SAM for the Cuprite Dataset.\n\n')
