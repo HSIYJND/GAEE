@@ -8,6 +8,9 @@ from MAPS import *
 import scipy.io as sio
 import matplotlib.pyplot as plt
 import xlsxwriter
+import pandas as pd
+import pytablewriter
+from tabulate import tabulate
 
 class DEMO(object):
 
@@ -360,36 +363,43 @@ if __name__ == '__main__':
 
 
 	algo = [ppi, nfindr, vca, gaee, ivfm]
+	algo_names = ['PPI', 'NFINDR', 'VCA', 'GAEE', 'GAEE-IVFm']
 
 
-	results = xlsxwriter.Workbook('results.xlsx')
-	formato = results.add_format({'align':'center','valign':'vcenter'})
-	tab1 = results.add_worksheet('TAB1-SAM')
-	tab2 = results.add_worksheet('TAB2-SID')
+	tab1_sam = pd.DataFrame()
+	tab1_sam['Endmembers'] = endmember
+	tab1_sam.set_index('Endmembers',inplace=True)
+	tab2_sam_stats = pd.DataFrame()
+	tab2_sam_stats[' '] = ['Mean','Std']
+	tab3_sid = pd.DataFrame()
+	tab3_sid['Endmembers'] = endmember
+	tab4_sid_stats = pd.DataFrame()
+	tab4_sid_stats[' '] = ['Mean','Std']
 
-	col = 1
 	for l in algo:
-		l.best_run(mrun)
-		row = 0
-		tab1.write(row,col,l.name,formato)
-		tab2.write(row,col,l.name,formato)
-		row += 1
-		for i in range(0,len(endmember)):
-			tab1.write(row,0,endmember[i],formato)
-			tab2.write(row,0,endmember[i],formato)
-			tab1.write(row,col,l.sam_values[i],formato)
-			tab2.write(row,col,l.sid_values[i],formato)
-			row+=1
-		tab1.write(row,col,'Mean',formato)
-		tab1.write(row+1,col,np.mean(l.sam_mean),formato)
-		tab1.write(row,col+1,'Std',formato)
-		tab1.write(row+1,col+1,np.mean(l.sam_std),formato)
-		tab2.write(row,col,'Mean',formato)
-		tab2.write(row+1,col,np.mean(l.sid_mean),formato)
-		tab2.write(row,col+1,'Std',formato)
-		tab2.write(row+1,col+1,np.mean(l.sid_std),formato)
-		col+=2
-	results.close()
+			l.best_run(mrun)
+			tab1_sam[l.name] = l.sam_values
+			tab2_sam_stats[l.name] = [np.mean(l.sam_mean), np.mean(l.sam_std)]
+			tab3_sid[l.name] = l.sid_values
+			tab4_sid_stats[l.name] = [np.mean(l.sid_mean), np.mean(l.sid_std)]
+
+	print(tab1_sam)
+	print(tab2_sam_stats)
+
+	print(tab3_sid)
+	print(tab4_sid_stats)
+
+	file = open("README.md","w")
+	file.write("# Hyperspectral Endmember Extraction\n\n")
+	file.write("### Douglas Winston R. S., Gustavo T. Laureano, Celso G. Camilo Jr.\n\n")
+	file.write("Endmember Extraction is a critical step in hyperspectral image analysis and classification. It is an useful method to decompose a mixed spectrum into a collection of spectra and their corresponding proportions. In this paper, we solve a linear endmember extraction problem as an evolutionary optimization task, maximizing the Simplex Volume in the endmember space. We propose a standard genetic algorithm and a variation with In Vitro Fertilization module (IVFm) to find the best solutions and compare the results with the state-of-art Vertex Component Analysis (VCA) method and the traditional algorithms Pixel Purity Index (PPI) and N-FINDR. The experimental results on real and synthetic hyperspectral data confirms the overcome in performance and accuracy of the proposed approaches over the mentioned algorithms.\n\n")
+
+	file.write('Comparison between the ground-truth Laboratory Reflectances and extracted endmembers using PPI, N-FINDR, VCA, GAEE, GAEE-IVFm using SAM for the Cuprite Dataset.\n\n')
+	file.write(tabulate(tab1_sam, tablefmt="pipe", headers="keys")+'\n\n')
+	file.write(tabulate(tab2_sam_stats, tablefmt="pipe", headers="keys")+'\n\n')
+	file.write('Comparison between the ground-truth Laboratory Reflectances and extracted endmembers using PPI, N-FINDR, VCA, GAEE, GAEE-IVFm using SID for the Cuprite Dataset.\n\n')
+	file.write(tabulate(tab3_sid, tablefmt="pipe", headers="keys")+'\n\n')
+	file.write(tabulate(tab4_sid_stats, tablefmt="pipe", headers="keys")+'\n\n')
 
 
 
