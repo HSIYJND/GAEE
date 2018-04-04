@@ -1,7 +1,6 @@
 from VCA import *
 from PPI import *
 from NFINDR import *
-from FIPPI import *
 from GAEE import *
 from GAEE_IVFm import *
 from MAPS import *
@@ -332,12 +331,6 @@ if __name__ == '__main__':
 	data_loc = "./DATA/cuprite_data.mat"
 	gt_loc = "./DATA/cuprite_groundtruth.mat"
 
-	# data_loc = "./DATA/grss2018_data.mat"
-	# gt_loc = "./DATA/grss2018_groundtruth.mat"
-
-	endmember = ['Alunite','Andradite','Buddingtonite','Dumortierite','Kaolinite_1','Kaolinite_2','Muscovite',
-				'Montmonrillonite','Nontronite','Pyrope','Sphene','Chalcedony','**Mean**','**Std**']
-
 	num_endm = 12
 	verbose = False
 	thr = 0.8
@@ -359,28 +352,24 @@ if __name__ == '__main__':
 	gaee = DEMO([data_loc,gt_loc,num_endm,'GAEE',npop,ngen,cxpb,mutpb],verbose)
 	ivfm = DEMO([data_loc,gt_loc,num_endm,'GAEE-IVFm',npop,ngen,cxpb,mutpb],verbose)
 
-
+	endmember_names = ['Alunite','Andradite','Buddingtonite','Dumortierite','Kaolinite_1','Kaolinite_2','Muscovite',
+				'Montmonrillonite','Nontronite','Pyrope','Sphene','Chalcedony','**Mean**','**Std**']
 	algo = [ppi, nfindr, vca, gaee, ivfm]
 	algo_names = ['PPI', 'NFINDR', 'VCA', 'GAEE', 'GAEE-IVFm']
 
 	# algo = [vca]
 	# algo_names = ['VCA']
 
-
 	tab1_sam = pd.DataFrame()
-	tab1_sam['Endmembers'] = endmember
+	tab1_sam['Endmembers'] = endmember_names
 	tab1_sam.set_index('Endmembers',inplace=True)
 
 	tab2_sid = pd.DataFrame()
-	tab2_sid['Endmembers'] = endmember
+	tab2_sid['Endmembers'] = endmember_names
 	tab2_sid.set_index('Endmembers',inplace=True)
 
 	for l in algo:
 			l.best_run(mrun)
-			
-			print(np.append(l.sam_values, [np.mean(l.sam_mean), np.mean(l.sam_std)]))
-			print(np.mean(l.sam_mean), np.mean(l.sam_std))
-
 			tab1_sam[l.name] = np.append(l.sam_values, [np.mean(l.sam_mean), np.mean(l.sam_std)])
 			tab2_sid[l.name] = np.append(l.sid_values, [np.mean(l.sid_mean), np.mean(l.sid_std)])
 
@@ -392,10 +381,19 @@ if __name__ == '__main__':
 	file.write("## Douglas Winston R. S., Gustavo T. Laureano, Celso G. Camilo Jr.\n\n")
 	file.write("Endmember Extraction is a critical step in hyperspectral image analysis and classification. It is an useful method to decompose a mixed spectrum into a collection of spectra and their corresponding proportions. In this paper, we solve a linear endmember extraction problem as an evolutionary optimization task, maximizing the Simplex Volume in the endmember space. We propose a standard genetic algorithm and a variation with In Vitro Fertilization module (IVFm) to find the best solutions and compare the results with the state-of-art Vertex Component Analysis (VCA) method and the traditional algorithms Pixel Purity Index (PPI) and N-FINDR. The experimental results on real and synthetic hyperspectral data confirms the overcome in performance and accuracy of the proposed approaches over the mentioned algorithms.\n\n")
 
+	file.write('Envirionment Setup:\n\n')
+	file.write('Monte Carlo runs: %s \n' % mrun)
+	file.write('Number of endmembers to estimate: %s \n' % num_endm)
+	file.write('Number of skewers (PPI): %s \n' % nSkewers)
+	file.write('Maximum number of iterations (N-FINDR): %s \n\n' % maxit)
+
+	file.write('Number of individuals in each generation: %s \n' % npop)
+	file.write('Number of generations: %s \n' % ngen)
+	file.write('Crossover probability: %s \n' % cxpb)
+	file.write('Mutation probability: %s \n\n' %mutpb)
+
 	file.write('### Comparison between the ground-truth Laboratory Reflectances and extracted endmembers using PPI, N-FINDR, VCA, GAEE, GAEE-IVFm using SAM for the Cuprite Dataset.\n\n')
 	file.write(tabulate(tab1_sam, tablefmt="pipe", headers="keys")+'\n\n')
 	file.write('### Comparison between the ground-truth Laboratory Reflectances and extracted endmembers using PPI, N-FINDR, VCA, GAEE, GAEE-IVFm using SID for the Cuprite Dataset.\n\n')
 	file.write(tabulate(tab2_sid, tablefmt="pipe", headers="keys")+'\n\n')
-
-
 
