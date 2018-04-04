@@ -1,0 +1,11 @@
+numpy
+scipy
+matplotlib
+# conda install matplotlib
+cvxopt
+sklearn
+deap
+xlsxwriter
+pandas
+pytablewriter
+tabulate
