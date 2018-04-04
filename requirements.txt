@@ -5,7 +5,5 @@ matplotlib
 cvxopt
 sklearn
 deap
-xlsxwriter
 pandas
-pytablewriter
 tabulate

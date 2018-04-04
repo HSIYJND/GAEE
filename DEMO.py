@@ -7,9 +7,7 @@ from GAEE_IVFm import *
 from MAPS import *
 import scipy.io as sio
 import matplotlib.pyplot as plt
-import xlsxwriter
 import pandas as pd
-import pytablewriter
 from tabulate import tabulate
 
 class DEMO(object):
@@ -338,7 +336,7 @@ if __name__ == '__main__':
 	# gt_loc = "./DATA/grss2018_groundtruth.mat"
 
 	endmember = ['Alunite','Andradite','Buddingtonite','Dumortierite','Kaolinite_1','Kaolinite_2','Muscovite',
-				'Montmonrillonite','Nontronite','Pyrope','Sphene','Chalcedony']
+				'Montmonrillonite','Nontronite','Pyrope','Sphene','Chalcedony','**Mean**','**Std**']
 
 	num_endm = 12
 	verbose = False
@@ -365,44 +363,39 @@ if __name__ == '__main__':
 	algo = [ppi, nfindr, vca, gaee, ivfm]
 	algo_names = ['PPI', 'NFINDR', 'VCA', 'GAEE', 'GAEE-IVFm']
 
+	# algo = [vca]
+	# algo_names = ['VCA']
+
 
 	tab1_sam = pd.DataFrame()
 	tab1_sam['Endmembers'] = endmember
 	tab1_sam.set_index('Endmembers',inplace=True)
-	tab2_sam_stats = pd.DataFrame()
-	tab2_sam_stats[' '] = ['Mean','Std']
-	tab2_sam_stats.set_index(' ',inplace=True)
-	tab3_sid = pd.DataFrame()
-	tab3_sid['Endmembers'] = endmember
-	tab3_sid.set_index('Endmembers',inplace=True)
-	tab4_sid_stats = pd.DataFrame()
-	tab4_sid_stats[' '] = ['Mean','Std']
-	tab4_sid_stats.set_index(' ',inplace=True)
+
+	tab2_sid = pd.DataFrame()
+	tab2_sid['Endmembers'] = endmember
+	tab2_sid.set_index('Endmembers',inplace=True)
 
 	for l in algo:
 			l.best_run(mrun)
-			tab1_sam[l.name] = l.sam_values
-			tab2_sam_stats[l.name] = [np.mean(l.sam_mean), np.mean(l.sam_std)]
-			tab3_sid[l.name] = l.sid_values
-			tab4_sid_stats[l.name] = [np.mean(l.sid_mean), np.mean(l.sid_std)]
+			
+			print(np.append(l.sam_values, [np.mean(l.sam_mean), np.mean(l.sam_std)]))
+			print(np.mean(l.sam_mean), np.mean(l.sam_std))
+
+			tab1_sam[l.name] = np.append(l.sam_values, [np.mean(l.sam_mean), np.mean(l.sam_std)])
+			tab2_sid[l.name] = np.append(l.sid_values, [np.mean(l.sid_mean), np.mean(l.sid_std)])
 
 	print(tab1_sam)
-	print(tab2_sam_stats)
-
-	print(tab3_sid)
-	print(tab4_sid_stats)
+	print(tab2_sid)
 
 	file = open("README.md","w")
 	file.write("# Comparison of Vertex Componet Analysis (VCA) and Genetic Algorithm Endmember Extraction (GAEE) algorithms for Endmember Extraction"+"\n\n")
-	file.write("### Douglas Winston R. S., Gustavo T. Laureano, Celso G. Camilo Jr.\n\n")
+	file.write("## Douglas Winston R. S., Gustavo T. Laureano, Celso G. Camilo Jr.\n\n")
 	file.write("Endmember Extraction is a critical step in hyperspectral image analysis and classification. It is an useful method to decompose a mixed spectrum into a collection of spectra and their corresponding proportions. In this paper, we solve a linear endmember extraction problem as an evolutionary optimization task, maximizing the Simplex Volume in the endmember space. We propose a standard genetic algorithm and a variation with In Vitro Fertilization module (IVFm) to find the best solutions and compare the results with the state-of-art Vertex Component Analysis (VCA) method and the traditional algorithms Pixel Purity Index (PPI) and N-FINDR. The experimental results on real and synthetic hyperspectral data confirms the overcome in performance and accuracy of the proposed approaches over the mentioned algorithms.\n\n")
 
-	file.write('#### Comparison between the ground-truth Laboratory Reflectances and extracted endmembers using PPI, N-FINDR, VCA, GAEE, GAEE-IVFm using SAM for the Cuprite Dataset.\n\n')
+	file.write('### Comparison between the ground-truth Laboratory Reflectances and extracted endmembers using PPI, N-FINDR, VCA, GAEE, GAEE-IVFm using SAM for the Cuprite Dataset.\n\n')
 	file.write(tabulate(tab1_sam, tablefmt="pipe", headers="keys")+'\n\n')
-	file.write(tabulate(tab2_sam_stats, tablefmt="pipe", headers="keys")+'\n\n')
-	file.write('#### Comparison between the ground-truth Laboratory Reflectances and extracted endmembers using PPI, N-FINDR, VCA, GAEE, GAEE-IVFm using SID for the Cuprite Dataset.\n\n')
-	file.write(tabulate(tab3_sid, tablefmt="pipe", headers="keys")+'\n\n')
-	file.write(tabulate(tab4_sid_stats, tablefmt="pipe", headers="keys")+'\n\n')
+	file.write('### Comparison between the ground-truth Laboratory Reflectances and extracted endmembers using PPI, N-FINDR, VCA, GAEE, GAEE-IVFm using SID for the Cuprite Dataset.\n\n')
+	file.write(tabulate(tab2_sid, tablefmt="pipe", headers="keys")+'\n\n')
 
 
 
