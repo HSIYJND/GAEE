@@ -371,10 +371,13 @@ if __name__ == '__main__':
 	tab1_sam.set_index('Endmembers',inplace=True)
 	tab2_sam_stats = pd.DataFrame()
 	tab2_sam_stats[' '] = ['Mean','Std']
+	tab2_sam_stats.set_index(' ',inplace=True)
 	tab3_sid = pd.DataFrame()
 	tab3_sid['Endmembers'] = endmember
+	tab3_sid.set_index('Endmembers',inplace=True)
 	tab4_sid_stats = pd.DataFrame()
 	tab4_sid_stats[' '] = ['Mean','Std']
+	tab4_sid_stats.set_index(' ',inplace=True)
 
 	for l in algo:
 			l.best_run(mrun)
