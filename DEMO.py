@@ -2,7 +2,6 @@ from VCA import *
 from PPI import *
 from NFINDR import *
 from GAEE import *
-from GAEE_IVFm import *
 from MAPS import *
 import scipy.io as sio
 import matplotlib.pyplot as plt

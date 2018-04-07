@@ -2,7 +2,6 @@ import numpy as np
 import scipy.io as sio
 import numpy.linalg as la
 import matplotlib.pyplot as plt
-from cvxopt import solvers, matrix
 
 class VCA(object):
 

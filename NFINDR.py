@@ -5,7 +5,6 @@ import scipy.io as sio
 import scipy as sp
 import numpy.linalg as la
 import matplotlib.pyplot as plt
-from cvxopt import solvers, matrix
 from sklearn.decomposition import PCA
 
 class NFINDR(object):
