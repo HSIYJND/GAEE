@@ -79,25 +79,17 @@ class DEMO(object):
 			if (verbose):
 				print('... Selecting FIPPI endmember extractor')
 			self.ee = FIPPI([self.data,self.nRow,self.nCol,self.nBand,self.nPixel, self.p, maxit],self.verbose)	
-		if argin[3] == 'GAEE':
+		if argin[3] == 'GAEE' or argin[3] == 'GAEE-IVFm' or argin[3] == 'GAEE-VCA' or argin[3] == 'GAEE-IVFm-VCA':
 			npop = argin[4]
 			ngen = argin[5]
 			cxpb = argin[6]
 			mutpb = argin[7]
+			initPurePixels = argin[8]
+			ivfm = argin[9]
 			if (verbose):
 				print('... Selecting GAEE endmember extractor')
-			self.ee = GAEE([self.data,self.nRow,self.nCol,self.nBand,self.nPixel, self.p, npop,
-				ngen,cxpb,mutpb],self.verbose)
-
-		if argin[3] == 'GAEE-IVFm':
-			npop = argin[4]
-			ngen = argin[5]
-			cxpb = argin[6]
-			mutpb = argin[7]
-			if (verbose):
-				print('... Selecting GAEE-IVFm endmember extractor')
-			self.ee = GAEEIVFm([self.data,self.nRow,self.nCol,self.nBand,self.nPixel, self.p, npop,
-				ngen,cxpb,mutpb],self.verbose)
+			self.ee = GAEE([self.name,self.data,self.nRow,self.nCol,self.nBand,self.nPixel, self.p, npop,
+				ngen,cxpb,mutpb,initPurePixels,ivfm],self.verbose)		
 
 		if (verbose):
 			print('... Selecting NNLS abundance mapper')
@@ -106,7 +98,7 @@ class DEMO(object):
 	def extract_endmember(self):
 		if (verbose):
 			print('... Extracting endmembers')
-		self.raw_endmembers = self.ee.extract_endmember()
+		self.raw_endmembers = self.ee.extract_endmember()[0]
 
 	def map_abundance(self):
 		if (verbose):
@@ -349,16 +341,17 @@ if __name__ == '__main__':
 	ppi = DEMO([data_loc,gt_loc,num_endm,'PPI',nSkewers,initSkewers],verbose)
 	nfindr = DEMO([data_loc,gt_loc,num_endm,'NFINDR',maxit],verbose)
 	vca = DEMO([data_loc,gt_loc,num_endm,'VCA'],verbose)
-	gaee = DEMO([data_loc,gt_loc,num_endm,'GAEE',npop,ngen,cxpb,mutpb],verbose)
-	ivfm = DEMO([data_loc,gt_loc,num_endm,'GAEE-IVFm',npop,ngen,cxpb,mutpb],verbose)
+	gaee = DEMO([data_loc,gt_loc,num_endm,'GAEE',npop,ngen,cxpb,mutpb,None,False],verbose)
+	ivfm = DEMO([data_loc,gt_loc,num_endm,'GAEE-IVFm',npop,ngen,cxpb,mutpb,None,True],verbose)
+	initPurePixels = vca.ee.extract_endmember()[1]
+	gaee_vca = DEMO([data_loc,gt_loc,num_endm,'GAEE-VCA',npop,ngen,cxpb,mutpb,initPurePixels,True],verbose)
+	ivfm_vca = DEMO([data_loc,gt_loc,num_endm,'GAEE-IVFm-VCA',npop,ngen,cxpb,mutpb,initPurePixels,True],verbose)
 
 	endmember_names = ['Alunite','Andradite','Buddingtonite','Dumortierite','Kaolinite_1','Kaolinite_2','Muscovite',
 				'Montmonrillonite','Nontronite','Pyrope','Sphene','Chalcedony','**Mean**','**Std**']
-	algo = [ppi, nfindr, vca, gaee, ivfm]
-	algo_names = ['PPI', 'NFINDR', 'VCA', 'GAEE', 'GAEE-IVFm']
+	algo = [ppi, nfindr, vca, gaee, ivfm, gaee_vca, ivfm_vca]
 
-	# algo = [vca]
-	# algo_names = ['VCA']
+	# algo = [gaee, ivfm, gaee_vca, ivfm_vca]
 
 	tab1_sam = pd.DataFrame()
 	tab1_sam['Endmembers'] = endmember_names
@@ -381,7 +374,7 @@ if __name__ == '__main__':
 	file.write("## Douglas Winston R. S., Gustavo T. Laureano, Celso G. Camilo Jr.\n\n")
 	file.write("Endmember Extraction is a critical step in hyperspectral image analysis and classification. It is an useful method to decompose a mixed spectrum into a collection of spectra and their corresponding proportions. In this paper, we solve a linear endmember extraction problem as an evolutionary optimization task, maximizing the Simplex Volume in the endmember space. We propose a standard genetic algorithm and a variation with In Vitro Fertilization module (IVFm) to find the best solutions and compare the results with the state-of-art Vertex Component Analysis (VCA) method and the traditional algorithms Pixel Purity Index (PPI) and N-FINDR. The experimental results on real and synthetic hyperspectral data confirms the overcome in performance and accuracy of the proposed approaches over the mentioned algorithms.\n\n")
 
-	file.write('Envirionment Setup:\n\n')
+	file.write('**Envirionment Setup:**\n\n')
 	file.write('Monte Carlo runs: %s \n\n' % mrun)
 	file.write('Number of endmembers to estimate: %s \n\n' % num_endm)
 	file.write('Number of skewers (PPI): %s \n\n' % nSkewers)

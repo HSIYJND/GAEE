@@ -10,6 +10,8 @@ import random
 
 class GAEE(object):
 
+	name = None
+
 	data = None
 	nRow = None
 	nCol = None
@@ -25,23 +27,31 @@ class GAEE(object):
 	endmembers = None
 	purepixels = None
 
+	initPurePixels = None
+	ivfm = False
+
 	verbose = True
 
 	def __init__(self, argin, verbose):
 		self.verbose = verbose
 		if (self.verbose):
 			print ('---		Initializing GAEE algorithm')
-		self.data = argin[0]
-		self.nRow = argin[1]
-		self.nCol = argin[2]
-		self.nBand = argin[3]
-		self.nPixel = argin[4]
-		self.p = argin[5]
+		self.name = argin[0]
+		self.data = argin[1]
+		self.nRow = argin[2]
+		self.nCol = argin[3]
+		self.nBand = argin[4]
+		self.nPixel = argin[5]
+		self.p = argin[6]
 
-		self.npop = argin[6]
-		self.ngen = argin[7]
-		self.cxpb = argin[8]
-		self.mutpb = argin[9]
+		self.npop = argin[7]
+		self.ngen = argin[8]
+		self.cxpb = argin[9]
+		self.mutpb = argin[10]
+		
+		
+		self.initPurePixels = argin[11]
+		self.ivfm = argin[12]
 
 	def princomp(self,A):
 		if (self.verbose):
@@ -80,6 +90,7 @@ class GAEE(object):
 		cxpb = self.cxpb
 		mutpb = self.mutpb
 
+
 		creator.create("FitnessMax", base.Fitness, weights=(1.0,))
 		creator.create("Individual", list, fitness=creator.FitnessMax)
 		
@@ -96,6 +107,11 @@ class GAEE(object):
 		
 		random.seed(64)
 		pop = toolbox.population(n=k)
+		
+		if self.initPurePixels is not None:
+			r = random.randint(0,p)
+			for f in range(p):
+				pop[r][f] = self.initPurePixels[f]
 
 		if (self.verbose):
 			print("---		Starting of evolution")
@@ -111,21 +127,52 @@ class GAEE(object):
 			g = g + 1
 			if (self.verbose):
 				print("^^^			Generation %i" % g)
+
 			offspring = toolbox.select(pop, len(pop))
 			offspring = list(map(toolbox.clone, offspring))
+
 			for child1, child2 in zip(offspring[::2], offspring[1::2]):
-				if random.random() < cxpb:
+				if random.random() < self.cxpb:
 					toolbox.mate(child1, child2)
 				del child1.fitness.values
 				del child2.fitness.values
 			for mutant in offspring:
-				if random.random() < mutpb:
+				if random.random() < self.mutpb:
 					toolbox.mutate(mutant)
 					del mutant.fitness.values
 			fitnesses = [toolbox.evaluate(ind) for ind in offspring]
+			
 			for ind, fit in zip(offspring, fitnesses):
 				ind.fitness.values = fit
 			pop[:] = offspring
+
+			if self.ivfm == True:
+				ivfoffspring = toolbox.select(pop, len(pop))
+				ivfoffspring = list(map(toolbox.clone, ivfoffspring))
+
+				ivffits = [ind.fitness.values[0] for ind in ivfoffspring]
+				fatheridx = np.argmax(ivffits)
+				fatherfit = np.max(ivffits)
+				father = creator.Individual(ivfoffspring[fatheridx].copy())
+	
+				for ind in ivfoffspring[::2]:
+					toolbox.mutate(ind)
+					del ind.fitness.values
+				for child1 in ivfoffspring:
+					child2 = creator.Individual(father.copy())
+					toolbox.mate(child1, child2)
+					del child1.fitness.values
+					del child2.fitness.values
+				ivffitnesses = [toolbox.evaluate(ind) for ind in ivfoffspring]
+				for ind, fit in zip(ivfoffspring, ivffitnesses):
+					ind.fitness.values = fit
+
+				popmax = max(fitnesses)
+				for ind in ivfoffspring:
+					if (ind.fitness.values >= popmax):
+						pop.insert(0,ind)
+					pop = tools.selBest(pop, k)
+
 			# for ind in pop:
 			# 	print(" %s %s " %(np.sort(ind),ind.fitness.values[0]))
 			fits = [ind.fitness.values[0] for ind in pop]
@@ -150,4 +197,5 @@ class GAEE(object):
 			print('---		Ending endmembers Extracting')
 
 		self.purepixels = best_ind
-		return self.endmembers
+		
+		return [self.endmembers,self.purepixels]

@@ -85,4 +85,4 @@ class NFINDR(object):
 		self.endmembers = np.asmatrix(E).T
 		self.purepixels = IDX
 
-		return self.endmembers
+		return [self.endmembers, self.purepixels]
