@@ -417,6 +417,7 @@ if __name__ == '__main__':
 
 	tab3_conf = pd.DataFrame()
 	tab3_conf['Parameters'] = parameters_names
+	tab3_conf.set_index('Parameters',inplace=True)
 	tab3_conf['GAEE'] = gaee_conf
 	tab3_conf['GAEE-IVFm'] = ivfm_conf
 	tab3_conf['GAEE-VCA'] = gaee_vca_conf
@@ -442,7 +443,7 @@ if __name__ == '__main__':
 	file.write('Maximum number of iterations (N-FINDR): %s \n\n' % maxit)
 
 	
-	file.write('### Parameters used in each GAEE versions')
+	file.write('### Parameters used in each GAEE versions\n\n')
 	file.write(tabulate(tab3_conf, tablefmt="pipe", headers="keys")+'\n\n')
 
 	file.write('### Comparison between the ground-truth Laboratory Reflectances and extracted endmembers using PPI, N-FINDR, VCA, GAEE, GAEE-IVFm using SAM for the Cuprite Dataset.\n\n')
