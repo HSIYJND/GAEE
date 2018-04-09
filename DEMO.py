@@ -318,6 +318,40 @@ class DEMO(object):
 		self.sid_mean = np.mean(sid_all_runs_value,axis=0)
 		self.sid_std = np.std(sid_all_runs_value,axis=0)
 
+def best_conf(mrun,npop,ngen,cxpb,mutpb):
+	if (verbose):
+		print('... Searching best configuration for GAEEs algorithms')
+	
+	vca = DEMO([data_loc,gt_loc,num_endm,'VCA'],verbose)
+	initPurePixels = vca.ee.extract_endmember()[1]
+
+	algo_results = {'GAEE':[], 'GAEE-IVFm':[], 'GAEE-VCA':[], 'GAEE-IVFm-VCA':[]}
+
+	for i in npop:
+		for j in ngen:
+			for k in cxpb:
+				for l in mutpb:
+					gaee = DEMO([data_loc,gt_loc,num_endm,'GAEE',i,j,k,l,None,False],verbose)
+					ivfm = DEMO([data_loc,gt_loc,num_endm,'GAEE-IVFm',i,j,k,l,None,True],verbose)
+					gaee_vca = DEMO([data_loc,gt_loc,num_endm,'GAEE-VCA',i,j,k,l,initPurePixels,False],verbose)
+					ivfm_vca = DEMO([data_loc,gt_loc,num_endm,'GAEE-IVFm-VCA',i,j,k,l,initPurePixels,True],verbose)
+
+					algo = [gaee, ivfm, gaee_vca, ivfm_vca]
+
+					for m in algo:
+						m.best_run(mrun)
+						algo_results[m.name].append([ [i,j,k,l], np.mean(m.sam_mean) ])
+
+
+	algo_bconf = {'GAEE':[], 'GAEE-IVFm':[], 'GAEE-VCA':[], 'GAEE-IVFm-VCA':[]}
+
+	for i in algo_results:
+		aux = [j[1] for j in algo_results[i]]
+		indx = np.argmin(aux) 
+		algo_bconf[i].append(algo_results[i][indx][0])
+		
+	return algo_bconf
+
 if __name__ == '__main__':
 	data_loc = "./DATA/cuprite_data.mat"
 	gt_loc = "./DATA/cuprite_groundtruth.mat"
@@ -332,25 +366,44 @@ if __name__ == '__main__':
 
 	maxit = 3*num_endm
 
-	npop = 100
-	ngen = 100
-	cxpb = 0.3
-	mutpb = 0.5
+	npop = [10,100, 1000] # i
+	ngen = [10, 100, 1000] # j
+	cxpb = [0.5, 0.7, 1] # k
+	mutpb = [0.05, 0.1, 0.3] # l
+
+	npop = [10] # i
+	ngen = [10] # j
+	cxpb = [0.5,1] # k
+	mutpb = [0.05] # l
+
+	conf = best_conf(mrun,npop,ngen,cxpb,mutpb)
+
+	gaee_conf = conf['GAEE'][0]
+	ivfm_conf = conf['GAEE-IVFm'][0]
+	gaee_vca_conf = conf['GAEE-VCA'][0]
+	ivfm_vca_conf = conf['GAEE-IVFm-VCA'][0]
+
+	print(gaee_conf)
+	print(ivfm_conf)
+	print(gaee_vca_conf)
+	print(ivfm_vca_conf)
 
 	ppi = DEMO([data_loc,gt_loc,num_endm,'PPI',nSkewers,initSkewers],verbose)
 	nfindr = DEMO([data_loc,gt_loc,num_endm,'NFINDR',maxit],verbose)
 	vca = DEMO([data_loc,gt_loc,num_endm,'VCA'],verbose)
-	gaee = DEMO([data_loc,gt_loc,num_endm,'GAEE',npop,ngen,cxpb,mutpb,None,False],verbose)
-	ivfm = DEMO([data_loc,gt_loc,num_endm,'GAEE-IVFm',npop,ngen,cxpb,mutpb,None,True],verbose)
+	gaee = DEMO([data_loc,gt_loc,num_endm,'GAEE',gaee_conf[0],gaee_conf[1],
+			gaee_conf[2],gaee_conf[3],None,False],verbose)
+	ivfm = DEMO([data_loc,gt_loc,num_endm,'GAEE-IVFm',ivfm_conf[0],ivfm_conf[1],
+			ivfm_conf[2],ivfm_conf[3],None,True],verbose)
 	initPurePixels = vca.ee.extract_endmember()[1]
-	gaee_vca = DEMO([data_loc,gt_loc,num_endm,'GAEE-VCA',npop,ngen,cxpb,mutpb,initPurePixels,True],verbose)
-	ivfm_vca = DEMO([data_loc,gt_loc,num_endm,'GAEE-IVFm-VCA',npop,ngen,cxpb,mutpb,initPurePixels,True],verbose)
+	gaee_vca = DEMO([data_loc,gt_loc,num_endm,'GAEE-VCA',gaee_vca_conf[0],gaee_vca_conf[1],
+			gaee_vca_conf[2],gaee_vca_conf[3],initPurePixels,False],verbose)
+	ivfm_vca = DEMO([data_loc,gt_loc,num_endm,'GAEE-IVFm-VCA',ivfm_vca_conf[0],ivfm_vca_conf[1],
+			ivfm_vca_conf[2],ivfm_vca_conf[3],initPurePixels,True],verbose)
 
 	endmember_names = ['Alunite','Andradite','Buddingtonite','Dumortierite','Kaolinite_1','Kaolinite_2','Muscovite',
 				'Montmonrillonite','Nontronite','Pyrope','Sphene','Chalcedony','**Mean**','**Std**']
 	algo = [ppi, nfindr, vca, gaee, ivfm, gaee_vca, ivfm_vca]
-
-	# algo = [gaee, ivfm, gaee_vca, ivfm_vca]
 
 	tab1_sam = pd.DataFrame()
 	tab1_sam['Endmembers'] = endmember_names
@@ -360,10 +413,19 @@ if __name__ == '__main__':
 	tab2_sid['Endmembers'] = endmember_names
 	tab2_sid.set_index('Endmembers',inplace=True)
 
+	parameters_names = ['Population Size','Number of Generations','Crossover Probability','Mutation Probability']
+
+	tab3_conf = pd.DataFrame()
+	tab3_conf['Parameters'] = parameters_names
+	tab3_conf['GAEE'] = gaee_conf
+	tab3_conf['GAEE-IVFm'] = ivfm_conf
+	tab3_conf['GAEE-VCA'] = gaee_vca_conf
+	tab3_conf['GAEE-IVFm-VCA'] = ivfm_vca_conf
+
 	for l in algo:
-			l.best_run(mrun)
-			tab1_sam[l.name] = np.append(l.sam_values, [np.mean(l.sam_mean), np.mean(l.sam_std)])
-			tab2_sid[l.name] = np.append(l.sid_values, [np.mean(l.sid_mean), np.mean(l.sid_std)])
+		l.best_run(mrun)
+		tab1_sam[l.name] = np.append(l.sam_values, [np.mean(l.sam_mean), np.mean(l.sam_std)])
+		tab2_sid[l.name] = np.append(l.sid_values, [np.mean(l.sid_mean), np.mean(l.sid_std)])
 
 	print(tab1_sam)
 	print(tab2_sid)
@@ -379,10 +441,9 @@ if __name__ == '__main__':
 	file.write('Number of skewers (PPI): %s \n\n' % nSkewers)
 	file.write('Maximum number of iterations (N-FINDR): %s \n\n' % maxit)
 
-	file.write('Number of individuals in each generation: %s \n\n' % npop)
-	file.write('Number of generations: %s \n\n' % ngen)
-	file.write('Crossover probability: %s \n\n' % cxpb)
-	file.write('Mutation probability: %s \n\n' %mutpb)
+	
+	file.write('### Parameters used in each GAEE versions')
+	file.write(tabulate(tab3_conf, tablefmt="pipe", headers="keys")+'\n\n')
 
 	file.write('### Comparison between the ground-truth Laboratory Reflectances and extracted endmembers using PPI, N-FINDR, VCA, GAEE, GAEE-IVFm using SAM for the Cuprite Dataset.\n\n')
 	file.write(tabulate(tab1_sam, tablefmt="pipe", headers="keys")+'\n\n')
