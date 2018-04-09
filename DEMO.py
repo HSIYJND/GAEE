@@ -366,15 +366,17 @@ if __name__ == '__main__':
 
 	maxit = 3*num_endm
 
-	npop = [10,100, 1000] # i
-	ngen = [10, 100, 1000] # j
+	# npop = [10,100, 1000] # i
+	# ngen = [10, 100, 1000] # j
+	npop = [10] # i
+	ngen = [10] # j
 	cxpb = [0.5, 0.7, 1] # k
 	mutpb = [0.05, 0.1, 0.3] # l
 
-	npop = [10] # i
-	ngen = [10] # j
-	cxpb = [0.5,1] # k
-	mutpb = [0.05] # l
+	# npop = [10] # i
+	# ngen = [10] # j
+	# cxpb = [0.5,1] # k
+	# mutpb = [0.05] # l
 
 	conf = best_conf(mrun,npop,ngen,cxpb,mutpb)
 
