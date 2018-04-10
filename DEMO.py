@@ -359,7 +359,7 @@ if __name__ == '__main__':
 	num_endm = 12
 	verbose = False
 	thr = 0.8
-	mrun = 2
+	mrun = 100
 
 	nSkewers = 100
 	initSkewers = None
@@ -368,8 +368,8 @@ if __name__ == '__main__':
 
 	# npop = [10,100, 1000] # i
 	# ngen = [10, 100, 1000] # j
-	npop = [10] # i
-	ngen = [10] # j
+	npop = [100] # i
+	ngen = [100] # j
 	cxpb = [0.5, 0.7, 1] # k
 	mutpb = [0.05, 0.1, 0.3] # l
 
