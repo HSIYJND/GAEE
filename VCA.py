@@ -15,6 +15,8 @@ class VCA(object):
 	endmembers = None
 	purepixels = None
 
+	genMean = None
+
 	verbose = True
 
 	def __init__(self, argin, verbose):

@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 from tabulate import tabulate
 import seaborn as sns; sns.set(color_codes=True)
+from scipy import stats
 
 class DEMO(object):
 
@@ -41,6 +42,7 @@ class DEMO(object):
 	sam_min = None
 
 	sam_mean = None
+	sam_var = None
 	sam_std = None
 
 	sid_em_max = None
@@ -53,6 +55,7 @@ class DEMO(object):
 	sid_min = None
 
 	sid_mean = None
+	sid_var = None
 	sid_std = None
 
 	gen_max = None
@@ -353,6 +356,7 @@ class DEMO(object):
 		self.sam_min = sam_min_run
 
 		self.sam_mean = np.mean(sam_all_runs_value,axis=0)
+		self.sam_var = np.var(sam_all_runs_value,axis=0)
 		self.sam_std = np.std(sam_all_runs_value,axis=0)
 
 		self.sid_em_max = sid_max_data
@@ -368,6 +372,7 @@ class DEMO(object):
 		self.sid_min = sid_max_run
 
 		self.sid_mean = np.mean(sid_all_runs_value,axis=0)
+		self.sid_var = np.var(sid_all_runs_value,axis=0)
 		self.sid_std = np.std(sid_all_runs_value,axis=0)	
 
 
@@ -450,14 +455,31 @@ def best_conf(mrun,npop,ngen,cxpb,mutpb):
 
 def run():
 	npop = [10]
-	ngen = [11]
+	ngen = [10]
 	cxpb = [0.5, 0.7, 1]
 	mutpb = [0.05, 0.1, 0.3]
-	mrun = 3
+	mrun = 10
 
-	conf = best_conf(mrun,npop,ngen,cxpb,mutpb)
+	# conf = best_conf(mrun,npop,ngen,cxpb,mutpb)
+	vca = DEMO([data_loc,gt_loc,num_endm,'VCA'],verbose)
+	vca.best_run(mrun)
+	gaee = DEMO([data_loc,gt_loc,num_endm,'GAEE',10,10,0.7,0.3,None,False],verbose)
+	gaee.best_run(mrun)
+	
+	print(vca.sam_var)
+	print(gaee.sam_var)
 
-	print(conf)
+	s = np.sqrt((vca.sam_var + gaee.sam_var)/2)
+	t = (vca.sam_mean - gaee.sam_mean/(s*np.sqrt(2/mrun)))
+	df = 2*mrun-2
+	p = 1 - stats.t.cdf(t,df=df)
+
+	print("t = " + str(t))
+	print("p = " + str(2*p))
+
+	# t2, p2 = stats.ttest_ind(a,b)
+	# print("t = " + str(t2))
+	# print("p = " + str(2*p2))
 
 
 
