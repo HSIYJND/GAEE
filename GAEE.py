@@ -30,6 +30,8 @@ class GAEE(object):
 	initPurePixels = None
 	ivfm = False
 
+	genMean = None
+
 	verbose = True
 
 	def __init__(self, argin, verbose):
@@ -48,7 +50,6 @@ class GAEE(object):
 		self.ngen = argin[8]
 		self.cxpb = argin[9]
 		self.mutpb = argin[10]
-		
 		
 		self.initPurePixels = argin[11]
 		self.ivfm = argin[12]
@@ -123,6 +124,7 @@ class GAEE(object):
 			print("^^^			Evaluated %i individuals" % len(pop))
 		fits = [ind.fitness.values[0] for ind in pop]
 		g = 0
+		self.genMean = []
 		while g < ng:
 			g = g + 1
 			if (self.verbose):
@@ -180,6 +182,9 @@ class GAEE(object):
 			mean = sum(fits) / length
 			sum2 = sum(x*x for x in fits)
 			std = abs(sum2 / length - mean**2)**0.5
+
+			self.genMean.append(np.log10([mean]))
+			
 			if (self.verbose):
 				print("^^^			Min %s" % min(fits))
 				print("^^^			Max %s" % max(fits))
