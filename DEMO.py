@@ -453,8 +453,8 @@ def best_conf(mrun,npop,ngen,cxpb,mutpb):
 	ax = sns.tsplot(time="Generations", value="Log10(volume)",
 	                 unit="subject", condition="Algorithms",
 	                 data=df)
-	plt.tight_layout()
 	plt.title("GAEEs Convergence")
+	plt.tight_layout()
 	plt.savefig('Convergence.png', format='png', dpi=200)
 
 	return algo_bconf
@@ -511,10 +511,21 @@ def run():
 		tab2_sid[l.name] = np.append(l.sid_values_min, [np.mean(l.sid_mean), np.mean(l.sid_std), p[0]])
 
 	file.write('### Comparison between the ground-truth Laboratory Reflectances and extracted endmembers using PPI, N-FINDR, VCA, GAEE, GAEE-IVFm using SAM for the Cuprite Dataset.\n\n')
-	file.write(tabulate(tab1_sam, tablefmt="pipe", headers="keys")+'\n\n')
+	table_fancy = tabulate(tab1_sam, tablefmt="pipe", floatfmt=".7f", headers="keys")
+	for idx, mi in enumerate([min([k for k in t.split() if k != '|'][1:]) for t in table_fancy.split('\n')[2:]]):
+		line = table_fancy.split('\n')[2:][idx]
+		table_fancy = table_fancy.replace(line, line.replace(' '+mi+' ', ' **'+mi+'** '))
+	file.write(table_fancy+'\n\n')
+	# file.write(tabulate(tab1_sam, tablefmt="pipe", headers="keys")+'\n\n')
 	file.write('### Comparison between the ground-truth Laboratory Reflectances and extracted endmembers using PPI, N-FINDR, VCA, GAEE, GAEE-IVFm using SID for the Cuprite Dataset.\n\n')
-	file.write(tabulate(tab2_sid, tablefmt="pipe", headers="keys")+'\n\n')
+	# file.write(tabulate(tab2_sid, tablefmt="pipe", headers="keys")+'\n\n')
 
+	table_fancy = tabulate(tab2_sid, tablefmt="pipe", floatfmt=".7f", headers="keys")
+	for idx, mi in enumerate([min([k for k in t.split() if k != '|'][1:]) for t in table_fancy.split('\n')[2:]]):
+		line = table_fancy.split('\n')[2:][idx]
+		table_fancy = table_fancy.replace(line, line.replace(' '+mi+' ', ' **'+mi+'** '))
+	file.write(table_fancy+'\n\n')
+	
 	# gaee = DEMO([data_loc,gt_loc,num_endm,'GAEE',10,10,0.7,0.3,None,False],verbose)
 	# gaee.best_run(mrun)
 	
