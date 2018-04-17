@@ -452,7 +452,7 @@ def best_conf(mrun,npop,ngen,cxpb,mutpb):
 	                 data=df)
 	plt.tight_layout()
 	plt.title("GAEEs Convergence")
-	plt.savefig('Convergence.eps', format='eps', dpi=1200)
+	plt.savefig('Convergence.png', format='png', dpi=1200)
 
 	return algo_bconf
 
