@@ -8,6 +8,7 @@ import pandas as pd
 from tabulate import tabulate
 import seaborn as sns; sns.set(color_codes=True)
 from scipy import stats
+from timeit import default_timer as timer
 
 class DEMO(object):
 
@@ -64,6 +65,8 @@ class DEMO(object):
 
 	sam_all_runs_value = None
 	sid_all_runs_value = None
+
+	time_runs = []
 
 	verbose = True
 
@@ -316,7 +319,11 @@ class DEMO(object):
 		self.sid_all_runs_value = np.zeros((mrun,self.p))
 
 		for i in range(mrun):
+			start = timer()
 			self.extract_endmember()
+			end = timer()
+			self.time_runs.append(end-start)
+			# self.extract_endmember()
 			[sam_idx, sam_value] = self.best_sam_match()
 			[sid_idx, sid_value] = self.best_sid_match()
 			
@@ -479,7 +486,7 @@ def run():
 	file.write('![alt text](Convergence.png)\n\n')
 
 	endmember_names = ['Alunite','Andradite','Buddingtonite','Dumortierite','Kaolinite_1','Kaolinite_2','Muscovite',
-				'Montmonrillonite','Nontronite','Pyrope','Sphene','Chalcedony','**Mean**','**Std**','**p-value**']
+				'Montmonrillonite','Nontronite','Pyrope','Sphene','Chalcedony','**Mean**','**Std**','**P-value**','**Time**']
 
 	ppi = DEMO([data_loc,gt_loc,num_endm,'PPI',nSkewers,initSkewers],verbose)
 	ppi.best_run(mrun)
@@ -499,8 +506,9 @@ def run():
 	tab2_sid.set_index('Endmembers',inplace=True)
 
 	for l in algo:
+		print(l.time_runs)
 		p = stats.ttest_ind(np.mean(vca.sam_all_runs_value,axis=1),np.mean(l.sam_all_runs_value,axis=1))
-		tab1_sam[l.name] = np.append(l.sam_values_min, [np.mean(l.sam_mean), np.mean(l.sam_std), p[0]])
+		tab1_sam[l.name] = np.append(l.sam_values_min, [np.mean(l.sam_mean), np.mean(l.sam_std), p[0], np.mean(l.time_runs)])
 		# s = np.sqrt((np.mean(vca.sid_var) + np.mean(l.sid_var))/2)
 		# t = (np.mean(vca.sid_mean) - np.mean(l.sid_mean)/(s*np.sqrt(2/mrun)))
 		# af = 2*mrun-2
@@ -508,7 +516,7 @@ def run():
 		# if (l.name == 'VCA'):
 		# 	p=0
 		p = stats.ttest_ind(np.mean(vca.sid_all_runs_value,axis=1),np.mean(l.sid_all_runs_value,axis=1))
-		tab2_sid[l.name] = np.append(l.sid_values_min, [np.mean(l.sid_mean), np.mean(l.sid_std), p[0]])
+		tab2_sid[l.name] = np.append(l.sid_values_min, [np.mean(l.sid_mean), np.mean(l.sid_std), p[0], np.mean(l.time_runs)])
 
 	file.write('### Comparison between the ground-truth Laboratory Reflectances and extracted endmembers using PPI, N-FINDR, VCA, GAEE, GAEE-IVFm using SAM for the Cuprite Dataset.\n\n')
 	table_fancy = tabulate(tab1_sam, tablefmt="pipe", floatfmt=".7f", headers="keys")
@@ -525,7 +533,7 @@ def run():
 		line = table_fancy.split('\n')[2:][idx]
 		table_fancy = table_fancy.replace(line, line.replace(' '+mi+' ', ' **'+mi+'** '))
 	file.write(table_fancy+'\n\n')
-	
+
 	# gaee = DEMO([data_loc,gt_loc,num_endm,'GAEE',10,10,0.7,0.3,None,False],verbose)
 	# gaee.best_run(mrun)
 	
