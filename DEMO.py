@@ -62,6 +62,9 @@ class DEMO(object):
 	gen_avg = None
 	gen_min = None
 
+	sam_all_runs_value = None
+	sid_all_runs_value = None
+
 	verbose = True
 
 	def __init__(self, argin,verbose):
@@ -298,7 +301,7 @@ class DEMO(object):
 		gen_avg = None
 		gen_min = None
 
-		sam_all_runs_value = np.zeros((mrun,self.p))
+		self.sam_all_runs_value = np.zeros((mrun,self.p))
 
 		sid_min_run = 9999
 		sid_min_values = None
@@ -310,15 +313,15 @@ class DEMO(object):
 		sid_max_idx = None
 		sid_max_data = None
 
-		sid_all_runs_value = np.zeros((mrun,self.p))
+		self.sid_all_runs_value = np.zeros((mrun,self.p))
 
 		for i in range(mrun):
 			self.extract_endmember()
 			[sam_idx, sam_value] = self.best_sam_match()
 			[sid_idx, sid_value] = self.best_sid_match()
 			
-			sam_all_runs_value[i,:] = sam_value
-			sid_all_runs_value[i,:] = sid_value
+			self.sam_all_runs_value[i,:] = sam_value
+			self.sid_all_runs_value[i,:] = sid_value
 
 			if(np.mean(sam_value) <= sam_min_run):
 				sam_min_run = np.mean(sam_value)
@@ -355,9 +358,9 @@ class DEMO(object):
 		self.sam_max = sam_max_run
 		self.sam_min = sam_min_run
 
-		self.sam_mean = np.mean(sam_all_runs_value,axis=0)
-		self.sam_var = np.var(sam_all_runs_value,axis=0)
-		self.sam_std = np.std(sam_all_runs_value,axis=0)
+		self.sam_mean = np.mean(self.sam_all_runs_value,axis=0)
+		self.sam_var = np.var(self.sam_all_runs_value,axis=0)
+		self.sam_std = np.std(self.sam_all_runs_value,axis=0)
 
 		self.sid_em_max = sid_max_data
 		self.sid_em_min = sid_min_data
@@ -371,9 +374,9 @@ class DEMO(object):
 		self.sid_max = sid_max_run
 		self.sid_min = sid_max_run
 
-		self.sid_mean = np.mean(sid_all_runs_value,axis=0)
-		self.sid_var = np.var(sid_all_runs_value,axis=0)
-		self.sid_std = np.std(sid_all_runs_value,axis=0)	
+		self.sid_mean = np.mean(self.sid_all_runs_value,axis=0)
+		self.sid_var = np.var(self.sid_all_runs_value,axis=0)
+		self.sid_std = np.std(self.sid_all_runs_value,axis=0)	
 
 
 	# self.sam_endmembers = sam_best_data
@@ -444,15 +447,15 @@ def best_conf(mrun,npop,ngen,cxpb,mutpb):
 			subject.append(k)
 			k+=1
 
-	d = {'Algorithms':name,'Generations':gen,'subject': subject,'Log10(Mean Volume)':value}
+	d = {'Algorithms':name,'Generations':gen,'subject': subject,'Log10(volume)':value}
 	df = pd.DataFrame(data=d)
 	plt.figure()
-	ax = sns.tsplot(time="Generations", value="Log10(Mean Volume)",
+	ax = sns.tsplot(time="Generations", value="Log10(volume)",
 	                 unit="subject", condition="Algorithms",
 	                 data=df)
 	plt.tight_layout()
 	plt.title("GAEEs Convergence")
-	plt.savefig('Convergence.png', format='png', dpi=1200)
+	plt.savefig('Convergence.png', format='png', dpi=200)
 
 	return algo_bconf
 
@@ -473,11 +476,11 @@ def run():
 	file.write('### Parameters used in each GAEE versions\n\n')
 	file.write(tabulate(tab3_conf, tablefmt="pipe", headers="keys")+'\n\n')
 
-	file.write('![alt text](Convergence.eps)\n\n')
+	file.write('![alt text](Convergence.png)\n\n')
 
 	endmember_names = ['Alunite','Andradite','Buddingtonite','Dumortierite','Kaolinite_1','Kaolinite_2','Muscovite',
-				'Montmonrillonite','Nontronite','Pyrope','Sphene','Chalcedony','**Mean**','**Std**','**t-test**']
-	
+				'Montmonrillonite','Nontronite','Pyrope','Sphene','Chalcedony','**Mean**','**Std**','**p-value**']
+
 	ppi = DEMO([data_loc,gt_loc,num_endm,'PPI',nSkewers,initSkewers],verbose)
 	ppi.best_run(mrun)
 	nfindr = DEMO([data_loc,gt_loc,num_endm,'NFINDR',maxit],verbose)
@@ -496,21 +499,16 @@ def run():
 	tab2_sid.set_index('Endmembers',inplace=True)
 
 	for l in algo:
-		s = np.sqrt((np.mean(vca.sam_var) + np.mean(l.sam_var))/2)
-		t = (np.mean(vca.sam_mean) - np.mean(l.sam_mean)/(s*np.sqrt(2/mrun)))
-		af = 2*mrun-2
-		p = 2*(1 - stats.t.cdf(t,df=af))
-		if (l.name == 'VCA'):
-			p=0
-		
-		tab1_sam[l.name] = np.append(l.sam_values_min, [np.mean(l.sam_mean), np.mean(l.sam_std), p])
-		s = np.sqrt((np.mean(vca.sid_var) + np.mean(l.sid_var))/2)
-		t = (np.mean(vca.sid_mean) - np.mean(l.sid_mean)/(s*np.sqrt(2/mrun)))
-		af = 2*mrun-2
-		p = 2*(1 - stats.t.cdf(t,df=af))
-		if (l.name == 'VCA'):
-			p=0
-		tab2_sid[l.name] = np.append(l.sid_values_min, [np.mean(l.sid_mean), np.mean(l.sid_std), p])
+		p = stats.ttest_ind(np.mean(vca.sam_all_runs_value,axis=1),np.mean(l.sam_all_runs_value,axis=1))
+		tab1_sam[l.name] = np.append(l.sam_values_min, [np.mean(l.sam_mean), np.mean(l.sam_std), p[0]])
+		# s = np.sqrt((np.mean(vca.sid_var) + np.mean(l.sid_var))/2)
+		# t = (np.mean(vca.sid_mean) - np.mean(l.sid_mean)/(s*np.sqrt(2/mrun)))
+		# af = 2*mrun-2
+		# p = 2*(1 - stats.t.cdf(t,df=af))
+		# if (l.name == 'VCA'):
+		# 	p=0
+		p = stats.ttest_ind(np.mean(vca.sid_all_runs_value,axis=1),np.mean(l.sid_all_runs_value,axis=1))
+		tab2_sid[l.name] = np.append(l.sid_values_min, [np.mean(l.sid_mean), np.mean(l.sid_std), p[0]])
 
 	file.write('### Comparison between the ground-truth Laboratory Reflectances and extracted endmembers using PPI, N-FINDR, VCA, GAEE, GAEE-IVFm using SAM for the Cuprite Dataset.\n\n')
 	file.write(tabulate(tab1_sam, tablefmt="pipe", headers="keys")+'\n\n')
