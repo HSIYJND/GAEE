@@ -23,7 +23,7 @@ Maximum number of iterations (N-FINDR): 5
 | Crossover Probability |    1   |         1   |        1   |             1   |
 | Mutation Probability  |    0.3 |         0.3 |        0.3 |             0.3 |
 
-![alt text](Convergence.eps)
+![alt text](Convergence.png)
 
 ### Comparison between the ground-truth Laboratory Reflectances and extracted endmembers using PPI, N-FINDR, VCA, GAEE, GAEE-IVFm using SAM for the Cuprite Dataset.
 
