@@ -428,7 +428,7 @@ def best_conf(mrun,npop,ngen,cxpb,mutpb):
 	for i in results:
 		aux1 = [j[2] for j in results[i]]
 		indx = np.argmin(aux1) 
-		algo_bconf[i].append(results[i][indx][0])
+		algo_bconf[i].append(results[i][indx])
 
 	for l in range(len(aux)):
 		for i in results:
@@ -444,42 +444,92 @@ def best_conf(mrun,npop,ngen,cxpb,mutpb):
 			subject.append(k)
 			k+=1
 
-	d = {'Algorithm':name,'Generation':gen,'subject': subject,'Log10()':value}
+	d = {'Algorithms':name,'Generations':gen,'subject': subject,'Log10(Mean Volume)':value}
 	df = pd.DataFrame(data=d)
-	ax = sns.tsplot(time="Generation", value="Log10()",
-	                 unit="subject", condition="Algorithm",
+	plt.figure()
+	ax = sns.tsplot(time="Generations", value="Log10(Mean Volume)",
+	                 unit="subject", condition="Algorithms",
 	                 data=df)
-	plt.show()
+	plt.tight_layout()
+	plt.title("GAEEs Convergence")
+	plt.savefig('Convergence.eps', format='eps', dpi=1200)
 
 	return algo_bconf
 
 def run():
-	npop = [10]
-	ngen = [10]
-	cxpb = [0.5, 0.7, 1]
-	mutpb = [0.05, 0.1, 0.3]
-	mrun = 10
 
-	# conf = best_conf(mrun,npop,ngen,cxpb,mutpb)
+	conf = best_conf(mrun,npop,ngen,cxpb,mutpb)
+	print(conf['GAEE'])
+
+	parameters_names = ['Population Size','Number of Generations','Crossover Probability','Mutation Probability']
+	tab3_conf = pd.DataFrame()
+	tab3_conf['Parameters'] = parameters_names
+	tab3_conf.set_index('Parameters',inplace=True)
+	tab3_conf['GAEE'] = conf['GAEE'][0][0]
+	tab3_conf['GAEE-IVFm'] = conf['GAEE-IVFm'][0][0]
+	tab3_conf['GAEE-VCA'] = conf['GAEE-VCA'][0][0]
+	tab3_conf['GAEE-IVFm-VCA'] = conf['GAEE-IVFm-VCA'][0][0]
+
+	file.write('### Parameters used in each GAEE versions\n\n')
+	file.write(tabulate(tab3_conf, tablefmt="pipe", headers="keys")+'\n\n')
+
+	file.write('![alt text](Convergence.eps)\n\n')
+
+	endmember_names = ['Alunite','Andradite','Buddingtonite','Dumortierite','Kaolinite_1','Kaolinite_2','Muscovite',
+				'Montmonrillonite','Nontronite','Pyrope','Sphene','Chalcedony','**Mean**','**Std**','**t-test**']
+	
+	ppi = DEMO([data_loc,gt_loc,num_endm,'PPI',nSkewers,initSkewers],verbose)
+	ppi.best_run(mrun)
+	nfindr = DEMO([data_loc,gt_loc,num_endm,'NFINDR',maxit],verbose)
+	nfindr.best_run(mrun)
 	vca = DEMO([data_loc,gt_loc,num_endm,'VCA'],verbose)
 	vca.best_run(mrun)
-	gaee = DEMO([data_loc,gt_loc,num_endm,'GAEE',10,10,0.7,0.3,None,False],verbose)
-	gaee.best_run(mrun)
 	
-	print(vca.sam_var)
-	print(gaee.sam_var)
+	algo = [ppi, nfindr, vca, conf['GAEE'][0][1], conf['GAEE-IVFm'][0][1], conf['GAEE-VCA'][0][1], conf['GAEE-IVFm-VCA'][0][1]]
 
-	s = np.sqrt((vca.sam_var + gaee.sam_var)/2)
-	t = (vca.sam_mean - gaee.sam_mean/(s*np.sqrt(2/mrun)))
-	df = 2*mrun-2
-	p = 1 - stats.t.cdf(t,df=df)
+	tab1_sam = pd.DataFrame()
+	tab1_sam['Endmembers'] = endmember_names
+	tab1_sam.set_index('Endmembers',inplace=True)
 
-	print("t = " + str(t))
-	print("p = " + str(2*p))
+	tab2_sid = pd.DataFrame()
+	tab2_sid['Endmembers'] = endmember_names
+	tab2_sid.set_index('Endmembers',inplace=True)
 
-	# t2, p2 = stats.ttest_ind(a,b)
-	# print("t = " + str(t2))
-	# print("p = " + str(2*p2))
+	for l in algo:
+		s = np.sqrt((np.mean(vca.sam_var) + np.mean(l.sam_var))/2)
+		t = (np.mean(vca.sam_mean) - np.mean(l.sam_mean)/(s*np.sqrt(2/mrun)))
+		af = 2*mrun-2
+		p = 2*(1 - stats.t.cdf(t,df=af))
+		if (l.name == 'VCA'):
+			p=0
+		
+		tab1_sam[l.name] = np.append(l.sam_values_min, [np.mean(l.sam_mean), np.mean(l.sam_std), p])
+		s = np.sqrt((np.mean(vca.sid_var) + np.mean(l.sid_var))/2)
+		t = (np.mean(vca.sid_mean) - np.mean(l.sid_mean)/(s*np.sqrt(2/mrun)))
+		af = 2*mrun-2
+		p = 2*(1 - stats.t.cdf(t,df=af))
+		if (l.name == 'VCA'):
+			p=0
+		tab2_sid[l.name] = np.append(l.sid_values_min, [np.mean(l.sid_mean), np.mean(l.sid_std), p])
+
+	file.write('### Comparison between the ground-truth Laboratory Reflectances and extracted endmembers using PPI, N-FINDR, VCA, GAEE, GAEE-IVFm using SAM for the Cuprite Dataset.\n\n')
+	file.write(tabulate(tab1_sam, tablefmt="pipe", headers="keys")+'\n\n')
+	file.write('### Comparison between the ground-truth Laboratory Reflectances and extracted endmembers using PPI, N-FINDR, VCA, GAEE, GAEE-IVFm using SID for the Cuprite Dataset.\n\n')
+	file.write(tabulate(tab2_sid, tablefmt="pipe", headers="keys")+'\n\n')
+
+	# gaee = DEMO([data_loc,gt_loc,num_endm,'GAEE',10,10,0.7,0.3,None,False],verbose)
+	# gaee.best_run(mrun)
+	
+	
+	# print(gaee.sam_var)
+
+	# s = np.sqrt((vca.sam_var + gaee.sam_var)/2)
+	# t = (vca.sam_mean - gaee.sam_mean/(s*np.sqrt(2/mrun)))
+	# df = 2*mrun-2
+	# p = 1 - stats.t.cdf(t,df=df)
+
+	# print("t = " + str(t))
+	# print("p = " + str(2*p))
 
 
 
@@ -491,9 +541,9 @@ if __name__ == '__main__':
 	verbose = False
 	num_endm = 12
 	thr = 0.8
-	nSkewers = 100
+	nSkewers = 5
 	initSkewers = None
-	maxit = 3*num_endm
+	maxit = 5
 
 	# npop = [10, 100, 1000]
 	# ngen = [10, 100, 1000]
@@ -501,10 +551,27 @@ if __name__ == '__main__':
 	# mutpb = [0.05, 0.1, 0.3]
 	# mrun = 100
 
+	npop = [10]
+	ngen = [10]
+	cxpb = [1]
+	mutpb = [0.3]
+	mrun = 2
 	
+	file = open("README.md","w")
+	file.write("# Comparison of Vertex Componet Analysis (VCA) and Genetic Algorithm Endmember Extraction (GAEE) algorithms for Endmember Extraction"+"\n\n")
+	file.write("## Douglas Winston R. S., Gustavo T. Laureano, Celso G. Camilo Jr.\n\n")
+	file.write("Endmember Extraction is a critical step in hyperspectral image analysis and classification. It is an useful method to decompose a mixed spectrum into a collection of spectra and their corresponding proportions. In this paper, we solve a linear endmember extraction problem as an evolutionary optimization task, maximizing the Simplex Volume in the endmember space. We propose a standard genetic algorithm and a variation with In Vitro Fertilization module (IVFm) to find the best solutions and compare the results with the state-of-art Vertex Component Analysis (VCA) method and the traditional algorithms Pixel Purity Index (PPI) and N-FINDR. The experimental results on real and synthetic hyperspectral data confirms the overcome in performance and accuracy of the proposed approaches over the mentioned algorithms.\n\n")
+
+	file.write('**Envirionment Setup:**\n\n')
+	file.write('Monte Carlo runs: %s \n\n' % mrun)
+	file.write('Number of endmembers to estimate: %s \n\n' % num_endm)
+	file.write('Number of skewers (PPI): %s \n\n' % nSkewers)
+	file.write('Maximum number of iterations (N-FINDR): %s \n\n' % maxit)
 
 	if debug:
 		run()
+
+	file.close()
 
 	# conf = best_conf(mrun,npop,ngen,cxpb,mutpb)
 
