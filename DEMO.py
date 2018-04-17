@@ -66,7 +66,7 @@ class DEMO(object):
 	sam_all_runs_value = None
 	sid_all_runs_value = None
 
-	time_runs = []
+	time_runs = None
 
 	verbose = True
 
@@ -317,12 +317,17 @@ class DEMO(object):
 		sid_max_data = None
 
 		self.sid_all_runs_value = np.zeros((mrun,self.p))
-
+		print(self.name)
+		self.time_runs = []
 		for i in range(mrun):
 			start = timer()
 			self.extract_endmember()
 			end = timer()
+			print('START',start)
+			print('END',end)
 			self.time_runs.append(end-start)
+
+			print(self.time_runs)
 			# self.extract_endmember()
 			[sam_idx, sam_value] = self.best_sam_match()
 			[sid_idx, sid_value] = self.best_sid_match()
@@ -506,7 +511,6 @@ def run():
 	tab2_sid.set_index('Endmembers',inplace=True)
 
 	for l in algo:
-		print(l.time_runs)
 		p = stats.ttest_ind(np.mean(vca.sam_all_runs_value,axis=1),np.mean(l.sam_all_runs_value,axis=1))
 		tab1_sam[l.name] = np.append(l.sam_values_min, [np.mean(l.sam_mean), np.mean(l.sam_std), p[0], np.mean(l.time_runs)])
 		# s = np.sqrt((np.mean(vca.sid_var) + np.mean(l.sid_var))/2)
