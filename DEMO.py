@@ -511,18 +511,20 @@ def run():
 	tab2_sid.set_index('Endmembers',inplace=True)
 
 	tab4_sam_stats = pd.DataFrame()
-	tab4_sam_stats['Statistics'] = ['**Statistics**','_Mean_','_Std_','_p-value_','_Time_']
+	tab4_sam_stats['Statistics'] = ['_Mean_','_Std_','_p-value_','_Time_']
+	tab4_sam_stats.set_index('Statistics',inplace=True)
 
 	tab5_sid_stats = pd.DataFrame()
-	tab5_sid_stats['Statistics'] = ['**Statistics**','_Mean_','_Std_','_p-value_','_Time_']	 
+	tab5_sid_stats['Statistics'] = ['_Mean_','_Std_','_p-value_','_Time_']	
+	tab5_sid_stats.set_index('Statistics',inplace=True) 
 
 	for l in algo:
 		p = stats.ttest_ind(np.mean(vca.sam_all_runs_value,axis=1),np.mean(l.sam_all_runs_value,axis=1))
 		tab1_sam[l.name] = l.sam_values_min
-		tab4_sam_stats[l.name] = [l.name,np.mean(l.sam_mean), np.mean(l.sam_std), p[0], np.mean(l.time_runs)]
+		tab4_sam_stats[l.name] = [np.mean(l.sam_mean), np.mean(l.sam_std), p[0], np.mean(l.time_runs)]
 		p = stats.ttest_ind(np.mean(vca.sid_all_runs_value,axis=1),np.mean(l.sid_all_runs_value,axis=1))
 		tab2_sid[l.name] = l.sid_values_min
-		tab5_sid_stats[l.name] = [l.name,np.mean(l.sid_mean), np.mean(l.sid_std), p[0], np.mean(l.time_runs)]
+		tab5_sid_stats[l.name] = [np.mean(l.sid_mean), np.mean(l.sid_std), p[0], np.mean(l.time_runs)]
 
 
 	file.write('### Comparison between the ground-truth Laboratory Reflectances and extracted endmembers using PPI, N-FINDR, VCA, GAEE, GAEE-IVFm using SAM for the Cuprite Dataset.\n\n')
