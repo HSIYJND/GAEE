@@ -485,16 +485,13 @@ def run():
 	tab3_conf['GAEE-VCA'] = conf['GAEE-VCA'][0][0]
 	tab3_conf['GAEE-IVFm-VCA'] = conf['GAEE-IVFm-VCA'][0][0]
 
-	tab4_stats = pd.DataFrame()
-
-
 	file.write('### Parameters used in each GAEE versions\n\n')
 	file.write(tabulate(tab3_conf, tablefmt="pipe", headers="keys")+'\n\n')
 
 	file.write('![alt text](Convergence.png)\n\n')
 
 	endmember_names = ['Alunite','Andradite','Buddingtonite','Dumortierite','Kaolinite_1','Kaolinite_2','Muscovite',
-				'Montmonrillonite','Nontronite','Pyrope','Sphene','Chalcedony','**Statistics**','_Mean_','_Std_','_p-value_','_Time_']
+				'Montmonrillonite','Nontronite','Pyrope','Sphene','Chalcedony']
 
 	ppi = DEMO([data_loc,gt_loc,num_endm,'PPI',nSkewers,initSkewers],verbose)
 	ppi.best_run(mrun)
@@ -513,18 +510,19 @@ def run():
 	tab2_sid['Endmembers'] = endmember_names
 	tab2_sid.set_index('Endmembers',inplace=True)
 
+	tab4_sam_stats = pd.DataFrame()
+	tab4_sam_stats['Statistics'] = ['**Statistics**','_Mean_','_Std_','_p-value_','_Time_']
+
+	tab5_sid_stats = pd.DataFrame()
+	tab5_sid_stats['Statistics'] = ['**Statistics**','_Mean_','_Std_','_p-value_','_Time_']	 
+
 	for l in algo:
 		p = stats.ttest_ind(np.mean(vca.sam_all_runs_value,axis=1),np.mean(l.sam_all_runs_value,axis=1))
-		tab1_sam[l.name] = np.append(l.sam_values_min, [l.name,np.mean(l.sam_mean), np.mean(l.sam_std), p[0], np.mean(l.time_runs)])
-		
-		# s = np.sqrt((np.mean(vca.sid_var) + np.mean(l.sid_var))/2)
-		# t = (np.mean(vca.sid_mean) - np.mean(l.sid_mean)/(s*np.sqrt(2/mrun)))
-		# af = 2*mrun-2
-		# p = 2*(1 - stats.t.cdf(t,df=af))
-		# if (l.name == 'VCA'):
-		# 	p=0
+		tab1_sam[l.name] = l.sam_values_min
+		tab4_sam_stats[l.name] = [l.name,np.mean(l.sam_mean), np.mean(l.sam_std), p[0], np.mean(l.time_runs)]
 		p = stats.ttest_ind(np.mean(vca.sid_all_runs_value,axis=1),np.mean(l.sid_all_runs_value,axis=1))
-		tab2_sid[l.name] = np.append(l.sid_values_min, [l.name, np.mean(l.sid_mean), np.mean(l.sid_std), p[0], np.mean(l.time_runs)])
+		tab2_sid[l.name] = l.sid_values_min
+		tab5_sid_stats[l.name] = [l.name,np.mean(l.sid_mean), np.mean(l.sid_std), p[0], np.mean(l.time_runs)]
 
 
 	file.write('### Comparison between the ground-truth Laboratory Reflectances and extracted endmembers using PPI, N-FINDR, VCA, GAEE, GAEE-IVFm using SAM for the Cuprite Dataset.\n\n')
@@ -533,11 +531,27 @@ def run():
 		line = table_fancy.split('\n')[2:][idx]
 		table_fancy = table_fancy.replace(line, line.replace(' '+mi+' ', ' **'+mi+'** '))
 	file.write(table_fancy+'\n\n')
+
+	file.write('### SAM Statistics for Cuprite Dataset. \n\n')
+	table_fancy = tabulate(tab4_sam_stats, tablefmt="pipe", floatfmt=".7f", headers="keys")
+	for idx, mi in enumerate([min([k for k in t.split() if k != '|'][1:]) for t in table_fancy.split('\n')[2:]]):
+		line = table_fancy.split('\n')[2:][idx]
+		table_fancy = table_fancy.replace(line, line.replace(' '+mi+' ', ' **'+mi+'** '))
+	file.write(table_fancy+'\n\n')
+
+
 	# file.write(tabulate(tab1_sam, tablefmt="pipe", headers="keys")+'\n\n')
 	file.write('### Comparison between the ground-truth Laboratory Reflectances and extracted endmembers using PPI, N-FINDR, VCA, GAEE, GAEE-IVFm using SID for the Cuprite Dataset.\n\n')
 	# file.write(tabulate(tab2_sid, tablefmt="pipe", headers="keys")+'\n\n')
 
 	table_fancy = tabulate(tab2_sid, tablefmt="pipe", floatfmt=".7f", headers="keys")
+	for idx, mi in enumerate([min([k for k in t.split() if k != '|'][1:]) for t in table_fancy.split('\n')[2:]]):
+		line = table_fancy.split('\n')[2:][idx]
+		table_fancy = table_fancy.replace(line, line.replace(' '+mi+' ', ' **'+mi+'** '))
+	file.write(table_fancy+'\n\n')
+
+	file.write('### SID Statistics for Cuprite Dataset. \n\n')
+	table_fancy = tabulate(tab5_sid_stats, tablefmt="pipe", floatfmt=".7f", headers="keys")
 	for idx, mi in enumerate([min([k for k in t.split() if k != '|'][1:]) for t in table_fancy.split('\n')[2:]]):
 		line = table_fancy.split('\n')[2:][idx]
 		table_fancy = table_fancy.replace(line, line.replace(' '+mi+' ', ' **'+mi+'** '))
