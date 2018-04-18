@@ -14,7 +14,7 @@ Number of skewers (PPI): 5
 
 Maximum number of iterations (N-FINDR): 5 
 
-<center>
+<p align="center">
   
 ### Parameters used in each GAEE versions
 
@@ -79,4 +79,4 @@ Maximum number of iterations (N-FINDR): 5
 | _p-value_    | -0.8640130 | **-0.4213994** | 0.0000000 | 1.3481550 |   1.7788824 |  0.5919305 |       1.3131335 |
 | _Time_       |  0.2720207 |  9.4011933 | 0.6682736 | 0.2396158 |   0.2245959 |  **0.2210222** |       0.2299354 |
 
-</center>
+</p>
