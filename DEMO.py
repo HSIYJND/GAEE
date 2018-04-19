@@ -518,46 +518,37 @@ def run():
 	tab5_sid_stats['Statistics'] = ['_Mean_','_Std_','_p-value_','Gain','_Time_']	
 	tab5_sid_stats.set_index('Statistics',inplace=True) 
 
+	best_sam_gaee = None
+	best_sam_mean_gaee = 9999
+	best_sid_gaee = None
+	best_sid_mean_gaee = 9999
+
+	algo2 = []
+
+	for k in range(0,3):
+		algo2.append(algo[k])
+
+	for k in algo:
+		if k.name != 'PPI' and k.name != 'NFINDR' and k.name != 'VCA':
+			if np.mean(k.sam_mean) <= best_sam_mean_gaee :
+				best_sam_gaee = k
+				best_sam_mean_gaee = np.mean(k.sam_mean)
+			if np.mean(k.sid_mean) <= best_sid_mean_gaee :
+				best_sid_gaee = k
+				best_sid_mean_gaee = np.mean(k.sid_mean)
+
+	algo2.append(best_sam_gaee)
+
 
 	for l in algo:
-		best_gaee = None
-		best_mean_gaee = 9999
-		algo2 = []
-
-		for k in range(0,3):
-			algo2.append(algo[k])
-
-		for k in algo:
-			if k.name != 'PPI' and k.name != 'NFINDR' and k.name != 'VCA':
-				if np.mean(k.sam_mean) <= best_mean_gaee :
-					best_gaee = k
-					best_mean_gaee = np.mean(k.sam_mean)
-
-		algo2.append(best_gaee)
 
 		p = stats.ttest_ind(np.mean(vca.sam_all_runs_value,axis=1),np.mean(l.sam_all_runs_value,axis=1))
 		tab1_sam[l.name] = l.sam_values_min
-		tab4_sam_stats[l.name] = [np.mean(l.sam_mean), np.mean(l.sam_std), p[0], 100-(100*np.mean(best_gaee.sam_mean)/np.mean(l.sam_mean)), np.mean(l.time_runs)]
-		
-		best_gaee = None
-		best_mean_gaee = 9999
-		algo2 = []
-
-		for k in range(0,3):
-			algo2.append(algo[k])
-
-		for k in algo:
-			if k.name != 'PPI' and k.name != 'NFINDR' and k.name != 'VCA':
-				if np.mean(k.sid_mean) <= best_mean_gaee :
-					best_gaee = k
-					best_mean_gaee = np.mean(k.sid_mean)
-
-		algo2.append(best_gaee)
-
+		tab4_sam_stats[l.name] = [np.mean(l.sam_mean), np.mean(l.sam_std), p[0], 100-(100*np.mean(best_sam_gaee.sam_mean)/np.mean(l.sam_mean)), np.mean(l.time_runs)]
 
 		p = stats.ttest_ind(np.mean(vca.sid_all_runs_value,axis=1),np.mean(l.sid_all_runs_value,axis=1))
 		tab2_sid[l.name] = l.sid_values_min
-		tab5_sid_stats[l.name] = [np.mean(l.sid_mean), np.mean(l.sid_std), p[0],100-(100*np.mean(best_gaee.sam_mean)/np.mean(l.sam_mean)) ,np.mean(l.time_runs)]
+		tab5_sid_stats[l.name] = [np.mean(l.sid_mean), np.mean(l.sid_std), p[0],100-(100*np.mean(best_sid_gaee.sam_mean)/np.mean(l.sam_mean)) ,np.mean(l.time_runs)]
 
 
 	file.write('### Comparison between the ground-truth Laboratory Reflectances and extracted endmembers using PPI, N-FINDR, VCA, GAEE, GAEE-IVFm using SAM for the Cuprite Dataset.\n\n')
@@ -592,23 +583,10 @@ def run():
 		table_fancy = table_fancy.replace(line, line.replace(' '+mi+' ', ' **'+mi+'** '))
 	file.write(table_fancy+'\n\n')
 
-
-	for k in range(0,3):
-		algo2.append(algo[k])
-
-		for k in algo:
-			if k.name != 'PPI' and k.name != 'NFINDR' and k.name != 'VCA':
-				if np.mean(k.sam_mean) <= best_mean_gaee :
-					best_gaee = k
-					best_mean_gaee = np.mean(k.sam_mean)
-
-	algo2.append(best_gaee)	
-	colors = []
-
 	# fig = plt.figure()
 	for i in range(0, 12):
 		fig = plt.figure()
-		plt.plot(best_gaee.groundtruth[:,i],label='USGS Library')
+		plt.plot(best_sam_gaee.groundtruth[:,i],label='USGS Library')
 		
 		for idx, k in enumerate(algo2):
 			new_endmember = np.empty((k.groundtruth.shape[0],k.p)) 
