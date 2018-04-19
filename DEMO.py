@@ -467,7 +467,7 @@ def best_conf(mrun,npop,ngen,cxpb,mutpb):
 	                 data=df)
 	plt.title("GAEEs Convergence")
 	plt.tight_layout()
-	plt.savefig('Convergence.png', format='png', dpi=200)
+	plt.savefig('./IMAGES/Convergence.png', format='png', dpi=200)
 
 	return algo_bconf
 
@@ -488,7 +488,7 @@ def run():
 	file.write('### Parameters used in each GAEE versions\n\n')
 	file.write(tabulate(tab3_conf, tablefmt="pipe", headers="keys")+'\n\n')
 
-	file.write('![alt text](Convergence.png)\n\n')
+	file.write('![alt text](./IMAGES/Convergence.png)\n\n')
 
 	endmember_names = ['Alunite','Andradite','Buddingtonite','Dumortierite','Kaolinite_1','Kaolinite_2','Muscovite',
 				'Montmonrillonite','Nontronite','Pyrope','Sphene','Chalcedony']
@@ -595,8 +595,8 @@ def run():
 		plt.ylabel('reflectance (%)')
 		plt.tight_layout()
 		
-		file.write('![alt text]('+endmember_names[i]+'_Endmember.png)\n\n')
-		plt.savefig(endmember_names[i]+'_Endmember.png', format='png', dpi=200)
+		plt.savefig('./IMAGES/'+endmember_names[i]+'_Endmember.png', format='png', dpi=200)
+		file.write('![alt text](./IMAGES/'+endmember_names[i]+'_Endmember.png)\n\n')
 
 
 	# gaee = DEMO([data_loc,gt_loc,num_endm,'GAEE',10,10,0.7,0.3,None,False],verbose)
