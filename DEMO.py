@@ -511,20 +511,37 @@ def run():
 	tab2_sid.set_index('Endmembers',inplace=True)
 
 	tab4_sam_stats = pd.DataFrame()
-	tab4_sam_stats['Statistics'] = ['_Mean_','_Std_','_p-value_','_Time_']
+	tab4_sam_stats['Statistics'] = ['_Mean_','_Std_','_p-value_','Gain','_Time_']
 	tab4_sam_stats.set_index('Statistics',inplace=True)
 
 	tab5_sid_stats = pd.DataFrame()
-	tab5_sid_stats['Statistics'] = ['_Mean_','_Std_','_p-value_','_Time_']	
+	tab5_sid_stats['Statistics'] = ['_Mean_','_Std_','_p-value_','Gain','_Time_']	
 	tab5_sid_stats.set_index('Statistics',inplace=True) 
+
+	best_gaee = None
+	best_mean_gaee = 9999
+
+	algo2 = []
+
+	for k in range(0,3):
+		algo2.append(algo[k])
+
+	for k in algo:
+		if k.name != 'PPI' and k.name != 'NFINDR' and k.name != 'VCA':
+			if np.mean(k.sam_mean) <= best_mean_gaee :
+				best_gaee = k
+				best_mean_gaee = np.mean(k.sam_mean)
+
+	algo2.append(best_gaee)
+
 
 	for l in algo:
 		p = stats.ttest_ind(np.mean(vca.sam_all_runs_value,axis=1),np.mean(l.sam_all_runs_value,axis=1))
 		tab1_sam[l.name] = l.sam_values_min
-		tab4_sam_stats[l.name] = [np.mean(l.sam_mean), np.mean(l.sam_std), p[0], np.mean(l.time_runs)]
+		tab4_sam_stats[l.name] = [np.mean(l.sam_mean), np.mean(l.sam_std), p[0], (100*np.mean(best_gaee.sam_mean)/np.mean(l.sam_mean))-100, np.mean(l.time_runs)]
 		p = stats.ttest_ind(np.mean(vca.sid_all_runs_value,axis=1),np.mean(l.sid_all_runs_value,axis=1))
 		tab2_sid[l.name] = l.sid_values_min
-		tab5_sid_stats[l.name] = [np.mean(l.sid_mean), np.mean(l.sid_std), p[0], np.mean(l.time_runs)]
+		tab5_sid_stats[l.name] = [np.mean(l.sid_mean), np.mean(l.sid_std), p[0],(100*np.mean(best_gaee.sam_mean)/np.mean(l.sam_mean))-100 ,np.mean(l.time_runs)]
 
 
 	file.write('### Comparison between the ground-truth Laboratory Reflectances and extracted endmembers using PPI, N-FINDR, VCA, GAEE, GAEE-IVFm using SAM for the Cuprite Dataset.\n\n')
@@ -559,21 +576,7 @@ def run():
 		table_fancy = table_fancy.replace(line, line.replace(' '+mi+' ', ' **'+mi+'** '))
 	file.write(table_fancy+'\n\n')
 
-	best_gaee = None
-	best_mean_gaee = 9999
-
-	algo2 = []
-
-	for k in range(0,3):
-		algo2.append(algo[k])
-
-	for k in algo:
-		if k.name != 'PPI' and k.name != 'NFINDR' and k.name != 'VCA':
-			if np.mean(k.sam_mean) <= best_mean_gaee :
-				best_gaee = k
-				best_mean_gaee = np.mean(k.sam_mean)
-
-	algo2.append(best_gaee)
+	
 	colors = []
 
 	# fig = plt.figure()
@@ -597,22 +600,6 @@ def run():
 		
 		plt.savefig('./IMAGES/'+endmember_names[i]+'_Endmember.png', format='png', dpi=200)
 		file.write('![alt text](./IMAGES/'+endmember_names[i]+'_Endmember.png)\n\n')
-
-
-	# gaee = DEMO([data_loc,gt_loc,num_endm,'GAEE',10,10,0.7,0.3,None,False],verbose)
-	# gaee.best_run(mrun)
-	
-	
-	# print(gaee.sam_var)
-
-	# s = np.sqrt((vca.sam_var + gaee.sam_var)/2)
-	# t = (vca.sam_mean - gaee.sam_mean/(s*np.sqrt(2/mrun)))
-	# df = 2*mrun-2
-	# p = 1 - stats.t.cdf(t,df=df)
-
-	# print("t = " + str(t))
-	# print("p = " + str(2*p))
-
 
 
 if __name__ == '__main__':
