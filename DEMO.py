@@ -528,14 +528,14 @@ def run():
 
 
 	file.write('### Comparison between the ground-truth Laboratory Reflectances and extracted endmembers using PPI, N-FINDR, VCA, GAEE, GAEE-IVFm using SAM for the Cuprite Dataset.\n\n')
-	table_fancy = tabulate(tab1_sam, tablefmt="pipe", floatfmt=".7f", headers="keys")
+	table_fancy = tabulate(tab1_sam, tablefmt="pipe", floatfmt=".4f", headers="keys")
 	for idx, mi in enumerate([min([k for k in t.split() if k != '|'][1:]) for t in table_fancy.split('\n')[2:]]):
 		line = table_fancy.split('\n')[2:][idx]
 		table_fancy = table_fancy.replace(line, line.replace(' '+mi+' ', ' **'+mi+'** '))
 	file.write(table_fancy+'\n\n')
 
 	file.write('### SAM Statistics for Cuprite Dataset. \n\n')
-	table_fancy = tabulate(tab4_sam_stats, tablefmt="pipe", floatfmt=".7f", headers="keys")
+	table_fancy = tabulate(tab4_sam_stats, tablefmt="pipe", floatfmt=".4f", headers="keys")
 	for idx, mi in enumerate([min([k for k in t.split() if k != '|'][1:]) for t in table_fancy.split('\n')[2:]]):
 		line = table_fancy.split('\n')[2:][idx]
 		table_fancy = table_fancy.replace(line, line.replace(' '+mi+' ', ' **'+mi+'** '))
@@ -546,14 +546,14 @@ def run():
 	file.write('### Comparison between the ground-truth Laboratory Reflectances and extracted endmembers using PPI, N-FINDR, VCA, GAEE, GAEE-IVFm using SID for the Cuprite Dataset.\n\n')
 	# file.write(tabulate(tab2_sid, tablefmt="pipe", headers="keys")+'\n\n')
 
-	table_fancy = tabulate(tab2_sid, tablefmt="pipe", floatfmt=".7f", headers="keys")
+	table_fancy = tabulate(tab2_sid, tablefmt="pipe", floatfmt=".4f", headers="keys")
 	for idx, mi in enumerate([min([k for k in t.split() if k != '|'][1:]) for t in table_fancy.split('\n')[2:]]):
 		line = table_fancy.split('\n')[2:][idx]
 		table_fancy = table_fancy.replace(line, line.replace(' '+mi+' ', ' **'+mi+'** '))
 	file.write(table_fancy+'\n\n')
 
 	file.write('### SID Statistics for Cuprite Dataset. \n\n')
-	table_fancy = tabulate(tab5_sid_stats, tablefmt="pipe", floatfmt=".7f", headers="keys")
+	table_fancy = tabulate(tab5_sid_stats, tablefmt="pipe", floatfmt=".4f", headers="keys")
 	for idx, mi in enumerate([min([k for k in t.split() if k != '|'][1:]) for t in table_fancy.split('\n')[2:]]):
 		line = table_fancy.split('\n')[2:][idx]
 		table_fancy = table_fancy.replace(line, line.replace(' '+mi+' ', ' **'+mi+'** '))
