@@ -536,9 +536,37 @@ def run():
 
 
 	for l in algo:
+
+		algo2 = []
+
+		for k in range(0,3):
+			algo2.append(algo[k])
+
+		for k in algo:
+			if k.name != 'PPI' and k.name != 'NFINDR' and k.name != 'VCA':
+				if np.mean(k.sam_mean) <= best_mean_gaee :
+					best_gaee = k
+					best_mean_gaee = np.mean(k.sam_mean)
+
+		algo2.append(best_gaee)
+
 		p = stats.ttest_ind(np.mean(vca.sam_all_runs_value,axis=1),np.mean(l.sam_all_runs_value,axis=1))
 		tab1_sam[l.name] = l.sam_values_min
 		tab4_sam_stats[l.name] = [np.mean(l.sam_mean), np.mean(l.sam_std), p[0], 100-(100*np.mean(best_gaee.sam_mean)/np.mean(l.sam_mean)), np.mean(l.time_runs)]
+		algo2 = []
+
+		for k in range(0,3):
+			algo2.append(algo[k])
+
+		for k in algo:
+			if k.name != 'PPI' and k.name != 'NFINDR' and k.name != 'VCA':
+				if np.mean(k.sid_mean) <= best_mean_gaee :
+					best_gaee = k
+					best_mean_gaee = np.mean(k.sid_mean)
+
+		algo2.append(best_gaee)
+
+
 		p = stats.ttest_ind(np.mean(vca.sid_all_runs_value,axis=1),np.mean(l.sid_all_runs_value,axis=1))
 		tab2_sid[l.name] = l.sid_values_min
 		tab5_sid_stats[l.name] = [np.mean(l.sid_mean), np.mean(l.sid_std), p[0],100-(100*np.mean(best_gaee.sam_mean)/np.mean(l.sam_mean)) ,np.mean(l.time_runs)]
@@ -576,7 +604,17 @@ def run():
 		table_fancy = table_fancy.replace(line, line.replace(' '+mi+' ', ' **'+mi+'** '))
 	file.write(table_fancy+'\n\n')
 
-	
+
+	for k in range(0,3):
+		algo2.append(algo[k])
+
+		for k in algo:
+			if k.name != 'PPI' and k.name != 'NFINDR' and k.name != 'VCA':
+				if np.mean(k.sam_mean) <= best_mean_gaee :
+					best_gaee = k
+					best_mean_gaee = np.mean(k.sam_mean)
+
+	algo2.append(best_gaee)	
 	colors = []
 
 	# fig = plt.figure()
