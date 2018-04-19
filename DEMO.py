@@ -518,25 +518,10 @@ def run():
 	tab5_sid_stats['Statistics'] = ['_Mean_','_Std_','_p-value_','Gain','_Time_']	
 	tab5_sid_stats.set_index('Statistics',inplace=True) 
 
-	best_gaee = None
-	best_mean_gaee = 9999
-
-	algo2 = []
-
-	for k in range(0,3):
-		algo2.append(algo[k])
-
-	for k in algo:
-		if k.name != 'PPI' and k.name != 'NFINDR' and k.name != 'VCA':
-			if np.mean(k.sam_mean) <= best_mean_gaee :
-				best_gaee = k
-				best_mean_gaee = np.mean(k.sam_mean)
-
-	algo2.append(best_gaee)
-
 
 	for l in algo:
-
+		best_gaee = None
+		best_mean_gaee = 9999
 		algo2 = []
 
 		for k in range(0,3):
@@ -553,6 +538,9 @@ def run():
 		p = stats.ttest_ind(np.mean(vca.sam_all_runs_value,axis=1),np.mean(l.sam_all_runs_value,axis=1))
 		tab1_sam[l.name] = l.sam_values_min
 		tab4_sam_stats[l.name] = [np.mean(l.sam_mean), np.mean(l.sam_std), p[0], 100-(100*np.mean(best_gaee.sam_mean)/np.mean(l.sam_mean)), np.mean(l.time_runs)]
+		
+		best_gaee = None
+		best_mean_gaee = 9999
 		algo2 = []
 
 		for k in range(0,3):
