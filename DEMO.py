@@ -614,21 +614,21 @@ if __name__ == '__main__':
 	verbose = False
 	num_endm = 12
 	thr = 0.8
-	nSkewers = 1
+	nSkewers = 1000
 	initSkewers = None
-	maxit = 1
+	maxit = 3*num_endm
 
-	# npop = [10, 100, 1000]
-	# ngen = [10, 100, 1000]
-	# cxpb = [0.5, 0.7, 1]
-	# mutpb = [0.05, 0.1, 0.3]
-	# mrun = 100
+	npop = [10, 100, 1000]
+	ngen = [10, 100, 1000]
+	cxpb = [0.5, 0.7, 1]
+	mutpb = [0.05, 0.1, 0.3]
+	mrun = 100
 
-	npop = [10]
-	ngen = [10]
-	cxpb = [1]
-	mutpb = [0.3]
-	mrun = 2
+	# npop = [10]
+	# ngen = [10]
+	# cxpb = [1]
+	# mutpb = [0.3]
+	# mrun = 2
 	
 	file = open("README.md","w")
 	file.write("# Comparison of Vertex Componet Analysis (VCA) and Genetic Algorithm Endmember Extraction (GAEE) algorithms for Endmember Extraction"+"\n\n")
