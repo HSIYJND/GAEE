@@ -6,7 +6,7 @@ import scipy.io as sio
 import matplotlib.pyplot as plt
 import pandas as pd
 from tabulate import tabulate
-import seaborn as sns; sns.set(color_codes=True)
+import seaborn as sns; sns.color_palette("pastel",7)
 from scipy import stats
 from timeit import default_timer as timer
 
@@ -179,7 +179,7 @@ class DEMO(object):
 	def plot_endmember(self,i):
 		if (verbose):
 			print('... Plotting endmember')
-		plt.plot(self.raw_endmembers[:,i])
+		plt.plot(self.new_endmember[:,i])
 		plt.title(str(i))
 		plt.xlabel('wavelength (µm)')
 		plt.ylabel('reflectance (%)')
@@ -559,6 +559,46 @@ def run():
 		table_fancy = table_fancy.replace(line, line.replace(' '+mi+' ', ' **'+mi+'** '))
 	file.write(table_fancy+'\n\n')
 
+	best_gaee = None
+	best_mean_gaee = 9999
+
+	algo2 = []
+
+	for k in range(0,3):
+		algo2.append(algo[k])
+
+	for k in algo:
+		if k.name != 'PPI' and k.name != 'NFINDR' and k.name != 'VCA':
+			if np.mean(k.sam_mean) <= best_mean_gaee :
+				best_gaee = k
+				best_mean_gaee = np.mean(k.sam_mean)
+
+	algo2.append(best_gaee)
+	colors = []
+
+	# fig = plt.figure()
+	for i in range(0, 12):
+		fig = plt.figure()
+		plt.plot(best_gaee.groundtruth[:,i],label='USGS Library')
+		
+		for idx, k in enumerate(algo2):
+			new_endmember = np.empty((k.groundtruth.shape[0],k.p)) 
+			new_endmember[:] = np.nan
+			new_endmember[k.selectedBands,:] = k.raw_endmembers
+			
+			plt.plot(new_endmember[:,i],label=k.name)
+		
+		plt.title(endmember_names[i])
+		
+		plt.legend()
+		plt.xlabel('wavelength (µm)')
+		plt.ylabel('reflectance (%)')
+		plt.tight_layout()
+		
+		file.write('![alt text]('+endmember_names[i]+'_Endmember.png)\n\n')
+		plt.savefig(endmember_names[i]+'_Endmember.png', format='png', dpi=200)
+
+
 	# gaee = DEMO([data_loc,gt_loc,num_endm,'GAEE',10,10,0.7,0.3,None,False],verbose)
 	# gaee.best_run(mrun)
 	
@@ -583,9 +623,9 @@ if __name__ == '__main__':
 	verbose = False
 	num_endm = 12
 	thr = 0.8
-	nSkewers = 5
+	nSkewers = 1
 	initSkewers = None
-	maxit = 5
+	maxit = 1
 
 	# npop = [10, 100, 1000]
 	# ngen = [10, 100, 1000]
