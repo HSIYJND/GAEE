@@ -538,10 +538,10 @@ def run():
 	for l in algo:
 		p = stats.ttest_ind(np.mean(vca.sam_all_runs_value,axis=1),np.mean(l.sam_all_runs_value,axis=1))
 		tab1_sam[l.name] = l.sam_values_min
-		tab4_sam_stats[l.name] = [np.mean(l.sam_mean), np.mean(l.sam_std), p[0], (100*np.mean(best_gaee.sam_mean)/np.mean(l.sam_mean))-100, np.mean(l.time_runs)]
+		tab4_sam_stats[l.name] = [np.mean(l.sam_mean), np.mean(l.sam_std), p[0], 100-(100*np.mean(best_gaee.sam_mean)/np.mean(l.sam_mean)), np.mean(l.time_runs)]
 		p = stats.ttest_ind(np.mean(vca.sid_all_runs_value,axis=1),np.mean(l.sid_all_runs_value,axis=1))
 		tab2_sid[l.name] = l.sid_values_min
-		tab5_sid_stats[l.name] = [np.mean(l.sid_mean), np.mean(l.sid_std), p[0],(100*np.mean(best_gaee.sam_mean)/np.mean(l.sam_mean))-100 ,np.mean(l.time_runs)]
+		tab5_sid_stats[l.name] = [np.mean(l.sid_mean), np.mean(l.sid_std), p[0],100-(100*np.mean(best_gaee.sam_mean)/np.mean(l.sam_mean)) ,np.mean(l.time_runs)]
 
 
 	file.write('### Comparison between the ground-truth Laboratory Reflectances and extracted endmembers using PPI, N-FINDR, VCA, GAEE, GAEE-IVFm using SAM for the Cuprite Dataset.\n\n')
