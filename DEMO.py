@@ -317,17 +317,17 @@ class DEMO(object):
 		sid_max_data = None
 
 		self.sid_all_runs_value = np.zeros((mrun,self.p))
-		print(self.name)
+		#print(self.name)
 		self.time_runs = []
 		for i in range(mrun):
 			start = timer()
 			self.extract_endmember()
 			end = timer()
-			print('START',start)
-			print('END',end)
+			#print('START',start)
+			#print('END',end)
 			self.time_runs.append(end-start)
 
-			print(self.time_runs)
+			#print(self.time_runs)
 			# self.extract_endmember()
 			[sam_idx, sam_value] = self.best_sam_match()
 			[sid_idx, sid_value] = self.best_sid_match()
@@ -429,6 +429,7 @@ def best_conf(mrun,npop,ngen,cxpb,mutpb):
 
 					algo = [gaee, ivfm, gaee_vca, ivfm_vca]
 					for m in algo:
+						print(npop,ngen,cxpb,mutpb,m.name)
 						m.best_run(mrun)
 						results[m.name].append([ [i,j,k,l], m , np.mean(m.sam_values_min)])
 
@@ -472,9 +473,9 @@ def best_conf(mrun,npop,ngen,cxpb,mutpb):
 	return algo_bconf
 
 def run():
-
+	print("BEST CONFIGURATION")
 	conf = best_conf(mrun,npop,ngen,cxpb,mutpb)
-	print(conf['GAEE'])
+	#print(conf['GAEE'])
 
 	parameters_names = ['Population Size','Number of Generations','Crossover Probability','Mutation Probability']
 	tab3_conf = pd.DataFrame()
@@ -493,10 +494,13 @@ def run():
 	endmember_names = ['Alunite','Andradite','Buddingtonite','Dumortierite','Kaolinite_1','Kaolinite_2','Muscovite',
 				'Montmonrillonite','Nontronite','Pyrope','Sphene','Chalcedony']
 
+	print("PPI")
 	ppi = DEMO([data_loc,gt_loc,num_endm,'PPI',nSkewers,initSkewers],verbose)
 	ppi.best_run(mrun)
+	print("NFINDR")
 	nfindr = DEMO([data_loc,gt_loc,num_endm,'NFINDR',maxit],verbose)
 	nfindr.best_run(mrun)
+	print("VCA")
 	vca = DEMO([data_loc,gt_loc,num_endm,'VCA'],verbose)
 	vca.best_run(mrun)
 	
@@ -618,11 +622,17 @@ if __name__ == '__main__':
 	initSkewers = None
 	maxit = 3*num_endm
 
-	npop = [10, 100, 1000]
-	ngen = [10, 100, 1000]
-	cxpb = [0.5, 0.7, 1]
-	mutpb = [0.05, 0.1, 0.3]
-	mrun = 100
+	# npop = [100]
+	# ngen = [250]
+	# cxpb = [0.5, 0.7,1]
+	# mutpb = [0.05, 0.1, 0.3]
+	# mrun = 10
+
+	npop = [100]
+	ngen = [250]
+	cxpb = [1]
+	mutpb = [0.3]
+	mrun = 1
 
 	# npop = [10]
 	# ngen = [10]
