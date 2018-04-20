@@ -623,10 +623,10 @@ if __name__ == '__main__':
 	maxit = 3*num_endm
 
 	npop = [100]
-	ngen = [250]
+	ngen = [1000]
 	cxpb = [0.5, 0.7,1]
 	mutpb = [0.05, 0.1, 0.3]
-	mrun = 10
+	mrun = 50
 
 	# npop = [100]
 	# ngen = [250]
