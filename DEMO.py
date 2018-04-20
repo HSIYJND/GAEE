@@ -429,7 +429,7 @@ def best_conf(mrun,npop,ngen,cxpb,mutpb):
 
 					algo = [gaee, ivfm, gaee_vca, ivfm_vca]
 					for m in algo:
-						print(npop,ngen,cxpb,mutpb,m.name)
+						print(i,j,k,l,m.name)
 						m.best_run(mrun)
 						results[m.name].append([ [i,j,k,l], m , np.mean(m.sam_values_min)])
 
