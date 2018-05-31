@@ -6,8 +6,8 @@ Endmember Extraction is a critical step in hyperspectral image analysis and clas
 
 Paper Online in https://arxiv.org/abs/1805.10644
 
-
-\@ARTICLE{2018arXiv180510644D,
+```
+@ARTICLE{2018arXiv180510644D,
    author = {{Douglas Winston.~R.}, S. and {Laureano}, G.~T. and {Camilo}, Jr, C.~G.
 	},
     title = "{Comparison of VCA and GAEE algorithms for Endmember Extraction}",
@@ -20,7 +20,8 @@ archivePrefix = "arXiv",
    adsurl = {http://adsabs.harvard.edu/abs/2018arXiv180510644D},
   adsnote = {Provided by the SAO/NASA Astrophysics Data System}
 }
-\
+```
+
 **Envirionment Setup:**
 
 Monte Carlo runs: 50 
